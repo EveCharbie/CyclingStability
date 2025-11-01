@@ -5,6 +5,7 @@ Algebraic states: M
 Parameters: K, ref (upright position with only forward velocity)
 Constants: motor noise, sensory noise
 """
+
 import pickle
 import casadi as cas
 import numpy as np
@@ -32,6 +33,7 @@ from bioptim import (
 )
 from bioptim.examples.utils import ExampleUtils
 
+
 def sensory_reference(
     time: cas.MX | cas.SX,
     states: cas.MX | cas.SX,
@@ -52,8 +54,10 @@ def sensory_reference(
     ref = cas.MX.zeros()  # TODO: implement
     return ref
 
+
 def do_nothing():
     pass
+
 
 def prepare_socp(
     biorbd_model_path: str,
@@ -126,11 +130,7 @@ def prepare_socp(
     # Add objective functions
     objective_functions = ObjectiveList()
     objective_functions.add(
-        ObjectiveFcn.Lagrange.MINIMIZE_CONTROL,
-        node=Node.ALL_SHOOTING,
-        key="tau",
-        weight=1e3 / 2,
-        quadratic=True
+        ObjectiveFcn.Lagrange.MINIMIZE_CONTROL, node=Node.ALL_SHOOTING, key="tau", weight=1e3 / 2, quadratic=True
     )
     objective_functions.add(
         ObjectiveFcn.Lagrange.STOCHASTIC_MINIMIZE_EXPECTED_FEEDBACK_EFFORTS,
@@ -160,32 +160,32 @@ def prepare_socp(
         "K",
         do_nothing,  # The function that modifies the biorbd model
         size=n_k,  # n_ref * n_q
-        scaling=VariableScaling("K", np.ones((n_k, ))),
+        scaling=VariableScaling("K", np.ones((n_k,))),
     )
     parameters.add(
         "ref",
         do_nothing,  # The function that modifies the biorbd model
         size=n_ref,
-        scaling=VariableScaling("ref", np.ones((n_ref, ))),
+        scaling=VariableScaling("ref", np.ones((n_ref,))),
     )
 
     parameter_bounds = BoundsList()
     parameter_bounds.add(
         "K",
-        min_bound=np.ones((n_k, )) * -10,
-        max_bound=np.ones((n_k, )) * 10,
+        min_bound=np.ones((n_k,)) * -10,
+        max_bound=np.ones((n_k,)) * 10,
         interpolation=InterpolationType.CONSTANT,
     )
     parameter_bounds.add(
         "ref",
-        min_bound=np.ones((n_ref, )) * -1,
-        max_bound=np.ones((n_ref, )) * 1,
+        min_bound=np.ones((n_ref,)) * -1,
+        max_bound=np.ones((n_ref,)) * 1,
         interpolation=InterpolationType.CONSTANT,
     )
 
     parameter_init = InitialGuessList()
-    parameter_init["K"] = np.ones((n_k, )) * 0.01
-    parameter_init["ref"] = np.zeros((n_ref, ))
+    parameter_init["K"] = np.ones((n_k,)) * 0.01
+    parameter_init["ref"] = np.zeros((n_ref,))
 
     parameter_objectives = ParameterObjectiveList()
     parameter_objectives.add(
@@ -196,13 +196,11 @@ def prepare_socp(
     )
 
     # Dynamics
-    dynamics = DynamicsOptions(expand_dynamics=True) # Depends if the model dynamics is RAM expensive
+    dynamics = DynamicsOptions(expand_dynamics=True)  # Depends if the model dynamics is RAM expensive
 
     x_bounds = BoundsList()
     x_bounds.add("q", min_bound=[-10] * n_q, max_bound=[10] * n_q, interpolation=InterpolationType.CONSTANT)
-    x_bounds.add(
-        "qdot", min_bound=[-100] * n_qdot, max_bound=[100] * n_qdot, interpolation=InterpolationType.CONSTANT
-    )
+    x_bounds.add("qdot", min_bound=[-100] * n_qdot, max_bound=[100] * n_qdot, interpolation=InterpolationType.CONSTANT)
 
     # Initial guesses
     x_init = InitialGuessList()
@@ -257,7 +255,7 @@ def main():
     use_sx = True
     vizualize_sol_flag = True
 
-    biorbd_model_path = ExampleUtils.folder + "/models/LeuvenArmModel.bioMod" # TODO: change model
+    biorbd_model_path = ExampleUtils.folder + "/models/LeuvenArmModel.bioMod"  # TODO: change model
 
     # --- Prepare the ocp --- #
     dt = 0.01
