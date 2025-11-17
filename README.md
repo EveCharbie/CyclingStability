@@ -9,11 +9,11 @@
 
 Le modèle peut être dit predictif/realiste à certains niveaux si il remplit certains des critères suivants:
 - VALIDATION MOYENNE produits des quantités angulaires (ex: amplitudes des vitesses angulaires, frequences) conformes aux mesures experimentales dans des conditions d'observations similaires (pertubations, suivi de ligne, maintien de l'equilibre) -> Extraire les donnees de ref chez Moore et al., Dialynas at al., Ronné et al.
-- VALIDATION MOYENNE produit un mouvement d'une stabilite (variations du moment cinetique, temps retour a l'equilibre, cycle limite) proche de ceux observes experimentalement (pertubations, suivi de ligne, maintien de l'equilibre) ->Extraire les donnees de ref chez Moore et al. voire perturbations + chute
+- VALIDATION MOYENNE+ produit un mouvement d'une stabilite (variations du moment cinetique, temps retour a l'equilibre, cycle limite) proche de ceux observes experimentalement (pertubations, suivi de ligne, maintien de l'equilibre) ->Extraire les donnees de ref chez Moore et al. voire perturbations + chute
 - VALIDATION FAIBLE produit une strategie de maintient de l'equilibre temporelle qualitativement similaire (braquage, contre braquage, lean, counter lean) -> On manque de contruit sur cet aspect qualitatif, ca ira pas loin
 - VALIDATION FORTE produit une performance de tâche reproduisant les effets: du design du velo, de la vitesse -> Donnees de Ronné et al.
 - produit une stategie visuelle compatible/similaire avec mes dernieres observations
-
+- VALIDATION FAIBLE, produit un comportement fréquentiel vérifiant la théorie de McRuer et Jex
 En cas de validation de certains de ces niveaux il est possible
 
 
