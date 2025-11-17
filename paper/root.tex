@@ -1,0 +1,270 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[12pt,]{article}
+	
+\usepackage{authblk}
+\usepackage{fullpage}
+\usepackage{amssymb,amsmath, mleftright}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{siunitx}
+\usepackage[version=3]{mhchem}
+\usepackage[margin=2.5cm, textheight=1.5cm]{geometry}
+\usepackage{lipsum}
+\usepackage{microtype}
+\usepackage[left]{lineno}
+\linenumbers
+\usepackage{setspace}
+\doublespacing
+\usepackage[unicode=true]{hyperref}
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            colorlinks=false,
+            pdfborder={0 0 0}}
+\urlstyle{same} % don't use a different (monospace) font for urls
+\setcounter{secnumdepth}{5}
+
+% \usepackage{amsmath, mleftright}
+\usepackage{bm}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{mathrsfs}
+\usepackage{amsbsy}
+\usepackage[center]{caption}
+\captionsetup{labelsep=period}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{varwidth}
+\usepackage{algorithm}
+\usepackage{yhmath}
+\usepackage{tabularx}
+\usepackage{rotating}
+\usepackage[table]{xcolor}
+\definecolor{grey}{rgb}{0.9,0.9,0.9}
+\definecolor{aquamarine}{HTML}{00B5BE}
+\definecolor{lightgray}{gray}{0.95}
+\usepackage[noend]{algpseudocode}
+\usepackage{dsfont}
+\usepackage{environ}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{multirow}
+\usepackage{algorithm}
+\usepackage{accents}\newcommand\addtag{\refstepcounter{equation}\tag{\theequation}}
+\usepackage{etoolbox}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{threeparttable}
+\usepackage{rotating}
+\usepackage{enumerate}
+\usepackage[inline]{enumitem}
+\usepackage{hyperref}
+\usepackage{relsize}
+\usepackage{gensymb}
+\usepackage{color}
+\usepackage{comment}
+\usepackage{xparse}
+\usepackage{mathtools}
+\usepackage[T1]{fontenc}
+\usepackage{makecell}
+\usepackage{subcaption}
+\usepackage{nicematrix}
+\usepackage{nicefrac}
+\usepackage{titlesec}
+\usepackage{indentfirst}
+\usepackage{rotating}
+\usepackage{soul}
+\usepackage{chngcntr}
+% \usepackage{natbib}
+
+
+%%% Customized commands
+\newcommand{\comJR}[1]{~\linebreak\noindent\colorbox{yellow}{\parbox{\dimexpr\columnwidth-1\fboxsep}{[JR: #1]}}}
+\newcommand{\comEC}[1]{~\linebreak\noindent\colorbox{green}{\parbox{\dimexpr\columnwidth-1\fboxsep}{[EC: #1]}}}
+\newcommand\greybox[1]{%
+  \vskip\baselineskip%
+  \par\noindent\colorbox{lightgray}{%
+    \begin{minipage}{\textwidth}#1\end{minipage}%
+  }%
+  \vskip\baselineskip%
+}
+\newcommand\myNewCommand{\mathbf{\texttt{my new command}}}
+\newcommand{\parallelitalic}{\mathbin{\!/\mkern-5mu/\!}}
+
+\makeatletter
+\def\ScaleWidthIfNeeded{%
+ \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\def\ScaleHeightIfNeeded{%
+  \ifdim\Gin@nat@height>0.9\textheight
+    0.9\textheight
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+\setkeys{Gin}{width=\ScaleWidthIfNeeded,height=\ScaleHeightIfNeeded,keepaspectratio}%
+
+\setstretch{1.5}
+
+\title{\LARGE \bf
+TITLE HERE
+}
+
+\author[*, 1, 2]{AUTHOR 1}
+\author[2, 3]{AUTHOR 2}
+\affil[*]{XXX@XXX}
+\affil[1]{Laboratoire de XXX}
+\affil[2]{XXX}
+
+\usepackage{pdfrender}
+\DeclareRobustCommand*{\pmbb}[1]{%
+  \textpdfrender{
+    TextRenderingMode=Stroke,
+    LineWidth=.1pt,
+  }{#1}%
+}
+\NewEnviron{comeq}{%
+\par\vspace{0ex}
+\begin{mdframed}[outerlinewidth=0.5,leftmargin=10,rightmargin=-10pt,backgroundcolor=white,hidealllines=true,leftline=true,
+innertopmargin=0pt,splittopskip=0, skipbelow=\baselineskip, innerbottommargin=0pt%
+skipabove=0ex]%
+\vspace{-0ex}\hspace{0pt}\textit{Proof:}%
+\itshape
+\begin{equation*} 
+\begin{split}
+\BODY
+\end{split}
+\end{equation*}
+\end{mdframed}
+}
+\newcommand{\eqRef}[1]{(\ref{#1})}
+\newcommand{\dbtilde}[1]{\accentset{\approx}{#1}}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+
+\usepackage{xesearch}
+\newcounter{words}
+\newenvironment{counted}{%
+  \setcounter{words}{0}
+  \SearchList!{wordcount}{\stepcounter{words}}
+    {a?,b?,c?,d?,e?,f?,g?,h?,i?,j?,k?,l?,m?,
+    n?,o?,p?,q?,r?,s?,t?,u?,v?,w?,x?,y?,z?}
+  \UndoBoundary{'}
+  \SearchOrder{p;}}{%
+  \StopSearching}
+  
+\hyphenpenalty=100000
+
+\begin{document}
+
+\titleclass{\subsubsubsection}{straight}[\subsection]
+\newcounter{subsubsubsection}[subsubsection]
+\renewcommand\thesubsubsubsection{\thesubsubsection.\arabic{subsubsubsection}}
+\renewcommand\theparagraph{\thesubsubsubsection.\arabic{paragraph}} % optional; useful if paragraphs are to be numbered
+\titleformat{\subsubsubsection}
+  {\normalfont\normalsize\bfseries}{\thesubsubsubsection}{1em}{}
+\titlespacing*{\subsubsubsection}
+{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+
+
+\maketitle
+
+% \section*{Citation}
+% \setstretch{1}
+% \begin{tt}
+% \noindent \textcolor{blue}{@misc}\{\textcolor{aquamarine}{Charbonneau2023temporal}, \\
+% \indent  \textcolor{brown}{author}  = {Charbonneau, Eve and Begon, Mickael and Romeas, Thomas}, \\
+% \indent  \textcolor{brown}{title}   = {A temporal quantitative analysis of visuomotor behavior during different \\
+% \indent twisting somersaults in elite and sub-elite trampolinists}, \\
+% \indent  \textcolor{brown}{howpublished} = {Preprint}, \\
+% \indent  \textcolor{brown}{month}    = {October}, \\
+% \indent  \textcolor{brown}{year}     = {2023}, \\
+% \}
+% \end{tt}
+
+\setstretch{1.5}
+
+
+\thispagestyle{empty}
+\pagebreak
+
+\input{sections/abstract}
+\textbf{Keywords -- XXX, Motor control, Visuo-motor strategies, Perception-action coupling}
+
+% \greybox{
+% \section*{Highlights}\label{sec:highlights}
+% \begin{itemize}
+%   \item Elite athletes used more tracking fixations than sub-elite athletes.
+%   \item Trampolinists changed their visuomotor strategies depending on the acrobatics.
+%   \item Trampolinists mainly fixated their gaze on the trampoline bed.
+%   \item Trampolinists' visual strategies presented an important execution variability.
+%   \item Trampolinists used a newly discovered visual strategy wherein their eyes remained fixed while their body (including their head) was rotating in the air.
+% \end{itemize}}
+
+\begin{counted}
+
+\section{Introduction}\label{sec:introduction}
+\input{sections/introduction}
+
+\section{Methods}\label{sec:methods}
+\input{sections/methods}
+
+\section{Results}\label{sec:results}
+\input{sections/results}
+
+\section{Discussion}\label{sec:discussion}
+\input{sections/discussion}
+
+\section{Conclusion}\label{sec:conclusion}
+\input{sections/conclusion}
+
+\end{counted}
+\textbf{Word count:} \thewords\ words.
+
+\section*{Author contributions}\label{sec:contributions}
+\textbf{XXX:} Conceptualization, Methodology, Software, Formal analysis, Investigation, Writing original draft, Visualization, Funding acquisition, data collection, interviews.
+\textbf{XXX:} Review \& Editing, Supervision, Funding acquisition.
+
+\section*{Disclosure of interest}\label{sec:interesest_conflit}
+The authors report no conflict of interest.
+
+\section*{Declaration of generative AI and AI-assisted technologies in the writing process}\label{sec:AI}
+During the preparation of this work the authors used \textit{ChatGPT} and \textit{Grammarly} in order to enhance writing correctness and clarity (spelling, grammar, sentence reformulation). After using these tools, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
+
+
+\section*{Acknowledgements}\label{sec:acknowledgements}
+This work was supported by XXX under Grant XXX.
+
+\section*{Data availability statement}\label{sec:data_availability}
+The animations of the optimal solutions and the code used for the generation of the predictive simulations and all analysis is available here \url{https://github.com/EveCharbie/CyclingStability} \cite{Charbonneau2024VisionOCP}. TODO CHANGE REPO
+
+
+
+\renewcommand\refname{References}
+\bibliographystyle{ieeetr}
+\bibliography{biblio}
+
+\clearpage
+
+\begingroup
+\let\clearpage\relax 
+\onecolumn 
+\appendix
+\section*{Appendices}
+\addcontentsline{toc}{section}{Appendices}
+\renewcommand{\thesubsection}{\Alph{subsection}}
+\input{sections/appendix}
+\endgroup
+\renewcommand{\thefigure}{\arabic{figure}}
+
+\end{document}
