@@ -51,12 +51,12 @@ system = bicycle.to_system()
 
 normal = bicycle.ground.get_normal(bicycle.ground.origin)
 g = sm.symbols("g")
-disturbance = me.dynamicsymbols("disturbance")
+# disturbance = me.dynamicsymbols("disturbance")
 steer_torque = me.dynamicsymbols("steer_torque")
 system.apply_uniform_gravity(-g * normal)
-system.add_loads(
-    me.Force(bicycle.rear_frame.saddle.point, disturbance * bicycle.rear_frame.wheel_hub.axis)
-)
+# system.add_loads(
+#     me.Force(bicycle.rear_frame.saddle.point, disturbance * bicycle.rear_frame.wheel_hub.axis)
+# )
 system.add_actuators(
     me.TorqueActuator(steer_torque, bicycle.rear_frame.steer_hub.axis,
                       bicycle.rear_frame.steer_hub.frame, bicycle.front_frame.steer_hub.frame)
@@ -94,7 +94,7 @@ import numpy as np
 
 
 bike_params = bp.Bicycle("Browser", pathToData='data')
-bike_params.add_rider("Jason", reCalc=True)
+# bike_params.add_rider("Jason", reCalc=True)
     
 constants = bicycle.get_param_values(bike_params)
 constants[g] = 9.81  # Don't forget to specify the gravitational constant.
@@ -123,7 +123,7 @@ simu.initial_conditions = {
 roll_rate_idx = len(system.q) + system.u[:].index(bicycle.u[3])
 max_roll_rate, max_torque = 0.2, 10
 simu.inputs = {
-    disturbance: lambda t, x: (30 + 30 * t) * np.sin(t * 2 * np.pi),
+    # disturbance: lambda t, x: (30 + 30 * t) * np.sin(t * 2 * np.pi),
     steer_torque: lambda t, x: -max_torque * max(-1, min(x[roll_rate_idx] / max_roll_rate, 1)),
 }
 
@@ -148,7 +148,7 @@ x_eval = CubicSpline(simu.t, simu.x.T)
 r_eval = CubicSpline(simu.t, [[cf(t, x) for cf in simu.inputs.values()]
                                  for t, x in zip(simu.t, simu.x.T)])
 p, p_vals = zip(*simu.constants.items())
-max_disturbance = r_eval(simu.t)[:, tuple(simu.inputs.keys()).index(disturbance)].max()
+# max_disturbance = r_eval(simu.t)[:, tuple(simu.inputs.keys()).index(disturbance)].max()
 
 # Plot the initial configuration of the model
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(8, 8))
