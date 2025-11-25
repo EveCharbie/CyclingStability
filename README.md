@@ -2,12 +2,13 @@
 
 ## Requirements
 
-python 3.13.5
-'''
+Je ne sais pas il y a de réelles limitations mais pour l'instant ça tourne sous python 3.13.5 de mon coté
+Quelques installations pour faire tourner le code qui produit les équations mouvements, simule et crée l'animation
+```
 pip install symbrim
 pip install bicycleparameters
 pip install symmeplot
-'''
+```
 
 
 ## Jules' todo list
