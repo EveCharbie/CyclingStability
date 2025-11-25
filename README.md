@@ -1,5 +1,15 @@
 # CyclingStability
 
+## Requirements
+
+python 3.13.5
+'''
+pip install symbrim
+pip install bicycleparameters
+pip install symmeplot
+'''
+
+
 ## Jules' todo list
 - Equation du mouvement du modèle le plus simple de SimBRiM
 - Paramètres d'un vélo basique
