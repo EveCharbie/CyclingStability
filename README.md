@@ -2,13 +2,20 @@
 
 ## Requirements
 
-Je ne sais pas il y a de réelles limitations mais pour l'instant ça tourne sous python 3.13.5 de mon coté
-Quelques installations pour faire tourner le code qui produit les équations mouvements, simule et crée l'animation
+Je ne sais pas il y a de réelles limitations mais pour l'instant ça tourne sous python 3.13.5 de mon coté.
+
+Quelques installations pour faire tourner le code qui produit les équations mouvements, simule et crée l'animation.
 ```
 pip install symbrim
 pip install bicycleparameters
 pip install symmeplot
 ```
+
+## Overview du code
+
+_bicycle_rider_mode_ permet de produire les EOMs du vélo basique, montre aussi comment le simualer et l'animer.
+
+_simulator_ est appelé par le _bicycle_rider_mode_ pour produire la simulation. 
 
 
 ## Jules' todo list
