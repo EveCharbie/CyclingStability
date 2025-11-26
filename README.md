@@ -1,5 +1,11 @@
 # CyclingStability
 
+
+## Coding steps
+1. Creation of the bicycle model using SimBRiM + translate it into CasADi/biorbd [bicycle_rider_model.py](bicycle_rider_model.py)
+2. Stochastic optimal control problem definition and solution [SOCP_bike_trunk_torque_driven.py](SOCP_bike_trunk_torque_driven.py)
+
+
 ## Requirements
 
 Je ne sais pas il y a de réelles limitations mais pour l'instant ça tourne sous python 3.13.5 de mon coté.
@@ -9,6 +15,8 @@ Quelques installations pour faire tourner le code qui produit les équations du 
 pip install symbrim
 pip install bicycleparameters
 pip install symmeplot
+conda install -c conda-forge biorbd
+conda install -c conda-forge black ipython
 ```
 
 ## Overview du code

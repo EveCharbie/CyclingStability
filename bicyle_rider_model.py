@@ -19,6 +19,7 @@ Created on Tue Nov 25 11:08:14 2025
 
 
 import warnings
+from IPython.display import display
 
 import sympy as sm
 import sympy.physics.mechanics as me
@@ -80,6 +81,7 @@ system.add_actuators(
 try:
     system.validate_system()
 except ValueError as e:
+    print("\n\nERROR : ")
     display(e)
 system.q_ind = [*bicycle.q[:4], *bicycle.q[5:]]
 system.q_dep = [bicycle.q[4]]
@@ -110,13 +112,13 @@ bike_params = bp.Bicycle("Browser", pathToData='data')
 constants = bicycle.get_param_values(bike_params)
 constants[g] = 9.81  # Don't forget to specify the gravitational constant.
 
-print('Constants of the model:')
-constants
+print('\n\nConstants of the model:')
+print(constants)
 
 missing_symbols = bicycle.get_all_symbols().difference(constants.keys())
 
-print('Is there any missing constant? -->')
-missing_symbols
+print('\n\nIs there any missing constant? -->')
+print(missing_symbols)
 
 #%% Simulation
 
