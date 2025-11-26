@@ -168,8 +168,8 @@ if False:
     # Plot the initial configuration of the model
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(8, 8))
     plotter = Plotter.from_model(bicycle, ax=ax)
-    # plotter.add_vector(disturbance * bicycle.rear_frame.wheel_hub.axis / max_disturbance,
-    #                    bicycle.rear_frame.saddle.point, name="disturbance", color="r")
+    plotter.add_vector(disturbance * bicycle.rear_frame.wheel_hub.axis / max_disturbance,
+                       bicycle.rear_frame.saddle.point, name="disturbance", color="r")
     plotter.lambdify_system((system.q[:] + system.u[:], simu.inputs.keys(), p))
     plotter.evaluate_system(x_eval(0.0), r_eval(0.0), p_vals)
     plotter.plot()
