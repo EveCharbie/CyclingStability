@@ -25,7 +25,7 @@ def sympy_to_casadi(expr, symbol_map=None, dynamic_symbol_map=None):
 
         # Case 2: Number
         if hasattr(expr, 'is_Number') and expr.is_Number:
-            return float(expr)
+            return ca.SX(float(expr))
 
         # Case 3: Function — handle math functions first, then dynamic symbols
         if isinstance(expr, sp.Function):
