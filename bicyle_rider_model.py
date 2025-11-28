@@ -53,7 +53,7 @@ system = bicycle.to_system()
 normal = bicycle.ground.get_normal(bicycle.ground.origin)
 
 
-# Add loads ans actuators
+# Add loads and actuators
 
 
 # Gravity
@@ -197,10 +197,15 @@ if False:
 from sympy_to_casadi import sympy_to_casadi
 from sympy import lambdify, symbols
 from sympy.physics.mechanics import *
-import casadi as ca
+import casadi as cas
 
 
-def eval_num_full(system, x, tau, distu):
+def eval_num_full(
+        system: system.System,
+        x,
+        tau,
+        distu,
+):
         
     # M_m @ Xd + F_m = 0
     M_m = system.mass_matrix_full
@@ -211,7 +216,7 @@ def eval_num_full(system, x, tau, distu):
     steer_torque = dynamicsymbols('steer_torque')
     disturbance = dynamicsymbols('disturbance')
     
-    n = shape(M_m)[0]
+    n = np.shape(M_m)[0]
     
     # f_M_m = lambdify(
     #     ( _x, _p, steer_torque, disturbance),
@@ -226,7 +231,7 @@ def eval_num_full(system, x, tau, distu):
     
     F_m_num = f_F_m(x, _p_vals, tau, distu)
         
-    return(F_m_num)
+    return F_m_num
 
 # Matrices extraction
 
@@ -239,11 +244,11 @@ F_d = system.forcing
 """
 The idea is to check if the conversion from sympy to casadi is correct.
 Evaluating the mass matric and the forcing vector with numerical values
-from the sympy and casadi expressim then check if we get the same values.
+from the sympy and casadi expression then check if we get the same values.
 """
 
 _x = system.q.col_join(system.u)
-x = np.ones(shape(_x))
+x = np.ones(np.shape(_x))
 tau = np.ones(1)
 distu = np.ones(1)
 

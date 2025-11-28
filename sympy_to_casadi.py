@@ -1,114 +1,158 @@
 import sympy as sp
-import casadi as ca
+import casadi as cas
 
-def sympy_to_casadi(expr, symbol_map=None, dynamic_symbol_map=None):
-    if symbol_map is None:
-        symbol_map = {}
-    if dynamic_symbol_map is None:
-        dynamic_symbol_map = {}
 
-    def get_casadi_symbol(sym):
-        if sym not in symbol_map:
-            symbol_map[sym] = ca.SX.sym(str(sym))
-        return symbol_map[sym]
+def get_casadi_variables(var: list[sp.symbols]):
+    casadi_variables = []
+    for v in var:
+        # All sympy symbols are of shape 1x1
+        casadi_variables += [cas.MX.sym(str(v), 1, 1)]
+    return casadi_variables
 
-    def get_casadi_dynamic_symbol(func):
-        name = str(func.func)
-        if name not in dynamic_symbol_map:
-            dynamic_symbol_map[name] = ca.SX.sym(name)
-        return dynamic_symbol_map[name]
+# def sympy_to_casadi(expr: sp.Function, var: list[sp.symbols]):
+#     symbol_map = {}
+#     dynamic_symbol_map = {}
+#
+#     def get_casadi_symbol(sym):
+#         if sym not in symbol_map:
+#             symbol_map[sym] = cas.MX.sym(str(sym))
+#         return symbol_map[sym]
+#
+#     def get_casadi_dynamic_symbol(func):
+#         name = str(func.func)
+#         if name not in dynamic_symbol_map:
+#             dynamic_symbol_map[name] = cas.MX.sym(name)
+#         return dynamic_symbol_map[name]
+#
+#     def convert(expr: sp.matrices.dense.MutableDenseMatrix):
+#         # Case 1: Symbol
+#         if isinstance(expr, sp.Symbol):
+#             return get_casadi_symbol(expr)
+#
+#         # Case 2: Number
+#         if hasattr(expr, 'is_Number') and expr.is_Number:
+#             return cas.MX(float(expr))
+#
+#         # Case 3: Function — handle math functions first, then dynamic symbols
+#         if isinstance(expr, sp.Function):
+#             func_name = expr.func.__name__
+#             casadi_func_map = {
+#                 'sin': cas.sin,
+#                 'cos': cas.cos,
+#                 'tan': cas.tan,
+#                 'asin': cas.asin,
+#                 'acos': cas.acos,
+#                 'atan': cas.atan,
+#                 'sinh': cas.sinh,
+#                 'cosh': cas.cosh,
+#                 'tanh': cas.tanh,
+#                 'asinh': cas.asinh,
+#                 'acosh': cas.acosh,
+#                 'atanh': cas.atanh,
+#                 'exp': cas.exp,
+#                 'log': cas.log,
+#                 'sqrt': cas.sqrt,
+#                 'Abs': cas.fabs,
+#                 'sign': cas.sign,
+#                 'floor': cas.floor,
+#                 'ceiling': cas.ceil,
+#                 'erf': cas.erf,
+#                 # 'erfc': cas.erfc,
+#             }
+#             if func_name in casadi_func_map:
+#                 return casadi_func_map[func_name](convert(expr.args[0]))
+#             else:
+#                 return get_casadi_dynamic_symbol(expr)
+#
+#         # Case 4: Addition
+#         if isinstance(expr, sp.Add):
+#             return sum(convert(arg) for arg in expr.args)
+#
+#         # Case 5: Multiplication
+#         if isinstance(expr, sp.Mul):
+#             result = 1
+#             for arg in expr.args:
+#                 result *= convert(arg)
+#             return result
+#
+#         # Case 6: Power
+#         if isinstance(expr, sp.Pow):
+#             base, exp = expr.args
+#             return convert(base) ** convert(exp)
+#
+#         # Case 7: Matrix
+#         if isinstance(expr, sp.MatrixBase):
+#             rows, cols = expr.shape
+#             cas_matrix = cas.MX.zeros(rows, cols)
+#             for i in range(rows):
+#                 for j in range(cols):
+#                     cas_matrix[i, j] = convert(expr[i, j])
+#             return cas_matrix
+#
+#         raise NotImplementedError(f"Unsupported SymPy expression type: {type(expr)}")
+#
+#     output_casadi = convert(expr)
+#     casadi_variables = get_casadi_variables(var)
+#     return output_casadi, casadi_variables
 
-    def convert(expr):
-        # Case 1: Symbol
-        if isinstance(expr, sp.Symbol):
-            return get_casadi_symbol(expr)
 
-        # Case 2: Number
-        if hasattr(expr, 'is_Number') and expr.is_Number:
-            return ca.SX(float(expr))
+def sympy_to_casadi_2(function_name: str, expr: sp.Function, var: list[sp.symbols]):
+    from sympy.utilities.lambdify import lambdify
 
-        # Case 3: Function — handle math functions first, then dynamic symbols
-        if isinstance(expr, sp.Function):
-            func_name = expr.func.__name__
-            casadi_func_map = {
-                'sin': ca.sin,
-                'cos': ca.cos,
-                'tan': ca.tan,
-                'asin': ca.asin,
-                'acos': ca.acos,
-                'atan': ca.atan,
-                'sinh': ca.sinh,
-                'cosh': ca.cosh,
-                'tanh': ca.tanh,
-                'asinh': ca.asinh,
-                'acosh': ca.acosh,
-                'atanh': ca.atanh,
-                'exp': ca.exp,
-                'log': ca.log,
-                'sqrt': ca.sqrt,
-                'Abs': ca.fabs,
-                'sign': ca.sign,
-                'floor': ca.floor,
-                'ceiling': ca.ceil,
-                'erf': ca.erf,
-                # 'erfc': ca.erfc,
-            }
-            if func_name in casadi_func_map:
-                return casadi_func_map[func_name](convert(expr.args[0]))
-            else:
-                return get_casadi_dynamic_symbol(expr)
+    casadi_mapping = {'ImmutableDenseMatrix': cas.blockcat,
+               'MutableDenseMatrix': cas.blockcat,
+               'Abs': cas.fabs,
+               'sin': cas.sin,
+               'cos': cas.cos,
+               'tan': cas.tan,
+               'asin': cas.asin,
+               'acos': cas.acos,
+               'atan': cas.atan,
+               'sinh': cas.sinh,
+               'cosh': cas.cosh,
+               'tanh': cas.tanh,
+               'asinh': cas.asinh,
+               'acosh': cas.acosh,
+               'atanh': cas.atanh,
+               'exp': cas.exp,
+               'log': cas.log,
+               'sqrt': cas.sqrt,
+               }
+    f = lambdify(var, expr, modules=casadi_mapping)
+    casadi_variables = get_casadi_variables(var)
 
-        # Case 4: Addition
-        if isinstance(expr, sp.Add):
-            return sum(convert(arg) for arg in expr.args)
+    casadi_output = f(*casadi_variables)
+    casadi_func = cas.Function(function_name, casadi_variables, [f(*casadi_variables)])
 
-        # Case 5: Multiplication
-        if isinstance(expr, sp.Mul):
-            result = 1
-            for arg in expr.args:
-                result *= convert(arg)
-            return result
-
-        # Case 6: Power
-        if isinstance(expr, sp.Pow):
-            base, exp = expr.args
-            return convert(base) ** convert(exp)
-
-        # Case 7: Matrix
-        if isinstance(expr, sp.MatrixBase):
-            rows, cols = expr.shape
-            cas_matrix = ca.SX.zeros(rows, cols)
-            for i in range(rows):
-                for j in range(cols):
-                    cas_matrix[i, j] = convert(expr[i, j])
-            return cas_matrix
-
-        raise NotImplementedError(f"Unsupported SymPy expression type: {type(expr)}")
-
-    return(convert(expr), dynamic_symbol_map)
+    return casadi_func
 
 # --- Exemple de test ---
 if __name__ == "__main__":
+
     # Définir des symboles SymPy
     x, y = sp.symbols('x y')
     t = sp.symbols('t')
-    bike_q7 = sp.Function('bike_v1_0_q7')(t)  # Fonction dynamique
+    # The following line is commented out because CasADi does not handle dynamic functions
+    # bike_q7 = sp.Function('bike_v1_0_q7')(t)  # Fonction dynamique
 
     # Créer une matrice SymPy 2x2
     M = sp.Matrix([
-        [x**2 + sp.sin(y), bike_q7],
+        [x**2 + sp.sin(y), sp.cos(x) * y],
         [sp.exp(x), sp.Abs(y - 1)]
     ])
 
     # Convertir en CasADi
-    M_casadi = sympy_to_casadi(M)
+    casadi_func = sympy_to_casadi_2("M", expr=M, var=[x, y, t])
+    output_casadi = casadi_func(0.1, 0.2, 0.3)
 
     # Afficher le résultat
     print("Matrice CasADi :")
-    print(M_casadi)
+    print(output_casadi)
 
     # Vérifier les types
     print("\nType de chaque élément :")
-    for i in range(M_casadi.size1()):
-        for j in range(M_casadi.size2()):
-            print(f"M[{i},{j}] = {M_casadi[i,j]} (type: {type(M_casadi[i,j])})")
+    for i in range(output_casadi.size1()):
+        for j in range(output_casadi.size2()):
+            print(f"M[{i},{j}] = {output_casadi[i,j]} (type: {type(output_casadi[i,j])})")
+
+    print("\nTest terminé avec succès.")

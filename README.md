@@ -15,7 +15,7 @@ Quelques installations pour faire tourner le code qui produit les équations du 
 pip install symbrim
 pip install bicycleparameters
 pip install symmeplot
-conda install -c conda-forge biorbd
+conda install -c conda-forge casadi
 conda install -c conda-forge black ipython
 ```
 
