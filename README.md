@@ -27,9 +27,9 @@ _simulator_ est appelé par le _bicycle_rider_mode_ pour produire la simulation.
 
 
 ## Jules' todo list
-- [] Equation du mouvement du modèle le plus simple de SimBRiM
-- [] Paramètres d'un vélo basique
-- [] Proposer des conditions de validation du modèle
+-[] Equation du mouvement du modèle le plus simple de SimBRiM
+-[] Paramètres d'un vélo basique
+-[] Proposer des conditions de validation du modèle
 
 ## Validations **possibles** du modèle
 
