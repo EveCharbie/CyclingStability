@@ -99,6 +99,28 @@ def get_casadi_variables(var: list[sp.symbols]):
 def sympy_to_casadi_2(function_name: str, expr: sp.Function, var: list[sp.symbols]):
     from sympy.utilities.lambdify import lambdify
 
+    casadi_variables = get_casadi_variables(var)
+    # x
+    bike_v1_0_q1 = var[0][0]
+    bike_v1_0_q2 = var[0][1]
+    bike_v1_0_q3 = var[0][2]
+    bike_v1_0_q4 = var[0][3]
+    bike_v1_0_q6 = var[0][4]
+    bike_v1_0_q7 = var[0][5]
+    bike_v1_0_q8 = var[0][6]
+    bike_v1_0_q5 = var[0][7]
+    bike_v1_0_u6 = var[0][8]
+    bike_v1_0_u7 = var[0][9]
+    bike_v1_0_u1 = var[0][10]
+    bike_v1_0_u2 = var[0][11]
+    bike_v1_0_u3 = var[0][12]
+    bike_v1_0_u5 = var[0][13]
+    bike_v1_0_u8 = var[0][14]
+    # steer torque
+    steer_torque = var[1][0]
+    # disturbance
+    disturbance = var[2][0]
+
     casadi_mapping = {'ImmutableDenseMatrix': cas.blockcat,
                'MutableDenseMatrix': cas.blockcat,
                'Abs': cas.fabs,
@@ -117,9 +139,25 @@ def sympy_to_casadi_2(function_name: str, expr: sp.Function, var: list[sp.symbol
                'exp': cas.exp,
                'log': cas.log,
                'sqrt': cas.sqrt,
+               'bike_v1_0_q1(t)': bike_v1_0_q1,
+                'bike_v1_0_q2(t)': bike_v1_0_q2,
+                'bike_v1_0_q3(t)': bike_v1_0_q3,
+                'bike_v1_0_q4(t)': bike_v1_0_q4,
+                'bike_v1_0_q6(t)': bike_v1_0_q6,
+                'bike_v1_0_q7(t)': bike_v1_0_q7,
+                'bike_v1_0_q8(t)': bike_v1_0_q8,
+                'bike_v1_0_q5(t)': bike_v1_0_q5,
+                'bike_v1_0_u6(t)': bike_v1_0_u6,
+                'bike_v1_0_u7(t)': bike_v1_0_u7,
+                'bike_v1_0_u1(t)': bike_v1_0_u1,
+                'bike_v1_0_u2(t)': bike_v1_0_u2,
+                'bike_v1_0_u3(t)': bike_v1_0_u3,
+                'bike_v1_0_u5(t)': bike_v1_0_u5,
+                'bike_v1_0_u8(t)': bike_v1_0_u8,
+                'steer_torque': steer_torque,
+                'disturbance': disturbance,
                }
     f = lambdify(var, expr, modules=casadi_mapping)
-    casadi_variables = get_casadi_variables(var)
 
     casadi_output = f(*casadi_variables)
     casadi_func = cas.Function(function_name, casadi_variables, [f(*casadi_variables)])

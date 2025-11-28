@@ -194,7 +194,7 @@ if False:
 #%% Conversion
 
 
-from sympy_to_casadi import sympy_to_casadi
+from sympy_to_casadi import sympy_to_casadi_2
 from sympy import lambdify, symbols
 from sympy.physics.mechanics import *
 import casadi as cas
@@ -240,14 +240,50 @@ def sympy_to_casadi_function(
         sympy_var: tuple[sm.matrices.immutable.ImmutableDenseMatrix],
         casadi_var: list[cas.MX],
 ):
-
-    # assert casadi_var.is_vector()
-
-    # if casadi_var[0].shape[1] > 1:
-    #     casadi_var = casadi_var.T
-    # casadi_var = cas.vertsplit(casadi_var)
-
     from sympy.utilities.lambdify import lambdify
+
+    variable_list = [
+        cas.SX.sym("bike_v1_0_q1", 1, 1),
+        cas.SX.sym("bike_v1_0_q2", 1, 1),
+        cas.SX.sym("bike_v1_0_q3", 1, 1),
+        cas.SX.sym("bike_v1_0_q4", 1, 1),
+        cas.SX.sym("bike_v1_0_q6", 1, 1),
+        cas.SX.sym("bike_v1_0_q7", 1, 1),
+        cas.SX.sym("bike_v1_0_q8", 1, 1),
+        cas.SX.sym("bike_v1_0_q5", 1, 1),
+        cas.SX.sym("bike_v1_0_u6", 1, 1),
+        cas.SX.sym("bike_v1_0_u7", 1, 1),
+        cas.SX.sym("bike_v1_0_u1", 1, 1),
+        cas.SX.sym("bike_v1_0_u2", 1, 1),
+        cas.SX.sym("bike_v1_0_u3", 1, 1),
+        cas.SX.sym("bike_v1_0_u5", 1, 1),
+        cas.SX.sym("bike_v1_0_u8", 1, 1),
+        cas.SX.sym("steer_torque", 1, 1),
+        cas.SX.sym("disturbance", 1, 1),
+    ]
+
+    # x
+    bike_v1_0_q1 = variable_list[0]
+    bike_v1_0_q2 = variable_list[1]
+    bike_v1_0_q3 = variable_list[2]
+    bike_v1_0_q4 = variable_list[3]
+    bike_v1_0_q6 = variable_list[4]
+    bike_v1_0_q7 = variable_list[5]
+    bike_v1_0_q8 = variable_list[6]
+    bike_v1_0_q5 = variable_list[7]
+    bike_v1_0_u6 = variable_list[8]
+    bike_v1_0_u7 = variable_list[9]
+    bike_v1_0_u1 = variable_list[10]
+    bike_v1_0_u2 = variable_list[11]
+    bike_v1_0_u3 = variable_list[12]
+    bike_v1_0_u5 = variable_list[13]
+    bike_v1_0_u8 = variable_list[14]
+    x_list = variable_list[:15]
+    # steer torque
+    steer_torque = variable_list[15]
+    # disturbance
+    disturbance = variable_list[16]
+
 
     casadi_mapping = {'ImmutableDenseMatrix': cas.blockcat,
                'MutableDenseMatrix': cas.blockcat,
@@ -267,8 +303,26 @@ def sympy_to_casadi_function(
                'exp': cas.exp,
                'log': cas.log,
                'sqrt': cas.sqrt,
+              'bike_v1_0_q1(t)': bike_v1_0_q1,
+              'bike_v1_0_q2(t)': bike_v1_0_q2,
+              'bike_v1_0_q3(t)': bike_v1_0_q3,
+              'bike_v1_0_q4(t)': bike_v1_0_q4,
+              'bike_v1_0_q6(t)': bike_v1_0_q6,
+              'bike_v1_0_q7(t)': bike_v1_0_q7,
+              'bike_v1_0_q8(t)': bike_v1_0_q8,
+              'bike_v1_0_q5(t)': bike_v1_0_q5,
+              'bike_v1_0_u6(t)': bike_v1_0_u6,
+              'bike_v1_0_u7(t)': bike_v1_0_u7,
+              'bike_v1_0_u1(t)': bike_v1_0_u1,
+              'bike_v1_0_u2(t)': bike_v1_0_u2,
+              'bike_v1_0_u3(t)': bike_v1_0_u3,
+              'bike_v1_0_u5(t)': bike_v1_0_u5,
+              'bike_v1_0_u8(t)': bike_v1_0_u8,
+              'steer_torque': steer_torque,
+              'disturbance': disturbance,
                }
     f = lambdify(sympy_var, sympy_expr, modules=casadi_mapping)
+    f(x_list, steer_torque, disturbance)
     casadi_func = cas.Function(function_name, casadi_var, [f(*casadi_var)])
     # ERROR: casadi expressions not iterable by design
 
@@ -297,8 +351,8 @@ distu = np.ones(1)
 print(eval_num_full(system, x, 1, 1))
 
 # Convertir M_m et F_m en CasADi
-# M_casadi = sympy_to_casadi(M_d)
-# F_casadi = sympy_to_casadi(F_d)
+# M_casadi = sympy_to_casadi_2(M_d)
+# F_casadi = sympy_to_casadi_2(F_d)
 
 x_sym = cas.MX.sym('x', len(_x))
 # p_sym = ca.MX.sym('p', len(_p))  # Add this variable to be replaced with constant values down the line
