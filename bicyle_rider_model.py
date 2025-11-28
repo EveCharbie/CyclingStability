@@ -233,6 +233,48 @@ def eval_num_full(
         
     return F_m_num
 
+
+def sympy_to_casadi_function(
+        function_name: str,
+        sympy_expr: sm.matrices.dense.MutableDenseMatrix,
+        sympy_var: tuple[sm.matrices.immutable.ImmutableDenseMatrix],
+        casadi_var: list[cas.MX],
+):
+
+    # assert casadi_var.is_vector()
+
+    # if casadi_var[0].shape[1] > 1:
+    #     casadi_var = casadi_var.T
+    # casadi_var = cas.vertsplit(casadi_var)
+
+    from sympy.utilities.lambdify import lambdify
+
+    casadi_mapping = {'ImmutableDenseMatrix': cas.blockcat,
+               'MutableDenseMatrix': cas.blockcat,
+               'Abs': cas.fabs,
+               'sin': cas.sin,
+               'cos': cas.cos,
+               'tan': cas.tan,
+               'asin': cas.asin,
+               'acos': cas.acos,
+               'atan': cas.atan,
+               'sinh': cas.sinh,
+               'cosh': cas.cosh,
+               'tanh': cas.tanh,
+               'asinh': cas.asinh,
+               'acosh': cas.acosh,
+               'atanh': cas.atanh,
+               'exp': cas.exp,
+               'log': cas.log,
+               'sqrt': cas.sqrt,
+               }
+    f = lambdify(sympy_var, sympy_expr, modules=casadi_mapping)
+    casadi_func = cas.Function(function_name, casadi_var, [f(*casadi_var)])
+    # ERROR: casadi expressions not iterable by design
+
+    return casadi_func
+
+
 # Matrices extraction
 
 # M_d @ Xd + F_d = 0
@@ -255,20 +297,22 @@ distu = np.ones(1)
 print(eval_num_full(system, x, 1, 1))
 
 # Convertir M_m et F_m en CasADi
-M_casadi = sympy_to_casadi(M_m)
-F_casadi = sympy_to_casadi(F_m)
+# M_casadi = sympy_to_casadi(M_d)
+# F_casadi = sympy_to_casadi(F_d)
 
-x_sym = ca.SX.sym('x', len(_x))
-p_sym = ca.SX.sym('p', len(_p))
-tau_sym = ca.SX.sym('tau')
-distu_sym = ca.SX.sym('distu')
+x_sym = cas.MX.sym('x', len(_x))
+# p_sym = ca.MX.sym('p', len(_p))  # Add this variable to be replaced with constant values down the line
+tau_sym = cas.MX.sym('tau')
+distu_sym = cas.MX.sym('distu')
 
+f_M_func = sympy_to_casadi_function("M_d", M_d, (_x, steer_torque, disturbance), [x_sym, tau_sym, distu_sym])
+f_F_func = sympy_to_casadi_function("F_d", F_d, (_x, steer_torque, disturbance), [x_sym, tau_sym, distu_sym])
 # f_M = ca.Function('f_M', [x_sym, p_sym, tau_sym, distu_sym], [M_casadi])
-f_F = ca.Function('f_F', [x_sym, p_sym, tau_sym, distu_sym], [ca.vec(F_casadi)])
+# f_F = cas.Function('f_F', [x_sym, tau_sym, distu_sym], [cas.vec(F_casadi)])
 
 #Erreur à ce niveau là
 # M_num = np.array(f_M(x, _p_vals, tau, distu)).astype(float)
-F_num = np.array(f_F(x, _p_vals, tau, distu)).astype(float)
+print(np.array(f_M_func(x, tau, distu)).astype(float))
 
 
 
