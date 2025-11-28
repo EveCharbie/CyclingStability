@@ -234,8 +234,14 @@ def eval_num_full(system, x, tau, distu):
 M_d = system.mass_matrix
 F_d = system.forcing
 
+#%% Numerical Evaluation
 
-# Numerical validation
+"""
+The idea is to check if the conversion from sympy to casadi is correct.
+Evaluating the mass matric and the forcing vector with numerical values
+from the sympy and casadi expressim then check if we get the same values.
+"""
+
 _x = system.q.col_join(system.u)
 x = np.ones(shape(_x))
 tau = np.ones(1)
@@ -253,7 +259,7 @@ tau_sym = ca.SX.sym('tau')
 distu_sym = ca.SX.sym('distu')
 
 # f_M = ca.Function('f_M', [x_sym, p_sym, tau_sym, distu_sym], [M_casadi])
-f_F = ca.Function('f_F', [x_sym, p_sym, tau_sym, distu_sym], [F_casadi])
+f_F = ca.Function('f_F', [x_sym, p_sym, tau_sym, distu_sym], [ca.vec(F_casadi)])
 
 #Erreur à ce niveau là
 # M_num = np.array(f_M(x, _p_vals, tau, distu)).astype(float)
