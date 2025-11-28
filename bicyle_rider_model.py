@@ -239,6 +239,7 @@ def sympy_to_casadi_function(
         sympy_expr: sm.matrices.dense.MutableDenseMatrix,
         sympy_var: tuple[sm.matrices.immutable.ImmutableDenseMatrix],
         casadi_var: list[cas.MX],
+        constants: dict[str, float],
 ):
     from sympy.utilities.lambdify import lambdify
 
@@ -251,6 +252,7 @@ def sympy_to_casadi_function(
         cas.SX.sym("bike_v1_0_q7", 1, 1),
         cas.SX.sym("bike_v1_0_q8", 1, 1),
         cas.SX.sym("bike_v1_0_q5", 1, 1),
+        cas.SX.sym("bike_v1_0_u4", 1, 1),
         cas.SX.sym("bike_v1_0_u6", 1, 1),
         cas.SX.sym("bike_v1_0_u7", 1, 1),
         cas.SX.sym("bike_v1_0_u1", 1, 1),
@@ -271,18 +273,19 @@ def sympy_to_casadi_function(
     bike_v1_0_q7 = variable_list[5]
     bike_v1_0_q8 = variable_list[6]
     bike_v1_0_q5 = variable_list[7]
-    bike_v1_0_u6 = variable_list[8]
-    bike_v1_0_u7 = variable_list[9]
-    bike_v1_0_u1 = variable_list[10]
-    bike_v1_0_u2 = variable_list[11]
-    bike_v1_0_u3 = variable_list[12]
-    bike_v1_0_u5 = variable_list[13]
-    bike_v1_0_u8 = variable_list[14]
-    x_list = variable_list[:15]
+    bike_v1_0_u4 = variable_list[8]
+    bike_v1_0_u6 = variable_list[9]
+    bike_v1_0_u7 = variable_list[10]
+    bike_v1_0_u1 = variable_list[11]
+    bike_v1_0_u2 = variable_list[12]
+    bike_v1_0_u3 = variable_list[13]
+    bike_v1_0_u5 = variable_list[14]
+    bike_v1_0_u8 = variable_list[15]
+    x_list = variable_list[:16]
     # steer torque
-    steer_torque = variable_list[15]
+    steer_torque = variable_list[16]
     # disturbance
-    disturbance = variable_list[16]
+    disturbance = variable_list[17]
 
 
     casadi_mapping = {'ImmutableDenseMatrix': cas.blockcat,
@@ -311,6 +314,7 @@ def sympy_to_casadi_function(
               'bike_v1_0_q7(t)': bike_v1_0_q7,
               'bike_v1_0_q8(t)': bike_v1_0_q8,
               'bike_v1_0_q5(t)': bike_v1_0_q5,
+              'bike_v1_0_u4(t)': bike_v1_0_u4,
               'bike_v1_0_u6(t)': bike_v1_0_u6,
               'bike_v1_0_u7(t)': bike_v1_0_u7,
               'bike_v1_0_u1(t)': bike_v1_0_u1,
@@ -321,6 +325,10 @@ def sympy_to_casadi_function(
               'steer_torque': steer_torque,
               'disturbance': disturbance,
                }
+    # Add constants
+    for name, value in constants.items():
+        casadi_mapping[str(name)] = float(value)
+
     f = lambdify(sympy_var, sympy_expr, modules=casadi_mapping)
     f(x_list, steer_torque, disturbance)
     casadi_func = cas.Function(function_name, casadi_var, [f(*casadi_var)])
@@ -355,12 +363,23 @@ print(eval_num_full(system, x, 1, 1))
 # F_casadi = sympy_to_casadi_2(F_d)
 
 x_sym = cas.MX.sym('x', len(_x))
-# p_sym = ca.MX.sym('p', len(_p))  # Add this variable to be replaced with constant values down the line
 tau_sym = cas.MX.sym('tau')
 distu_sym = cas.MX.sym('distu')
 
-f_M_func = sympy_to_casadi_function("M_d", M_d, (_x, steer_torque, disturbance), [x_sym, tau_sym, distu_sym])
-f_F_func = sympy_to_casadi_function("F_d", F_d, (_x, steer_torque, disturbance), [x_sym, tau_sym, distu_sym])
+f_M_func = sympy_to_casadi_function(
+    "M_d",
+    M_d,
+    (_x, steer_torque, disturbance),
+    [x_sym, tau_sym, distu_sym],
+    constants,
+)
+f_F_func = sympy_to_casadi_function(
+    "F_d",
+    F_d,
+    (_x, steer_torque, disturbance),
+    [x_sym, tau_sym, distu_sym],
+    constants,
+)
 # f_M = ca.Function('f_M', [x_sym, p_sym, tau_sym, distu_sym], [M_casadi])
 # f_F = cas.Function('f_F', [x_sym, tau_sym, distu_sym], [cas.vec(F_casadi)])
 
