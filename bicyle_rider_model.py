@@ -81,16 +81,20 @@ system.add_actuators(
 # Before forming the EoMs we need to specify which generalized coordinates 
 # and speeds are independent and which are dependent.
 
-try:
-    system.validate_system()
-except ValueError as e:
-    print("\n\nERROR : ")
-    display(e)
+
+    
+    
 system.q_ind = [*bicycle.q[:4], *bicycle.q[5:]]
 system.q_dep = [bicycle.q[4]]
 system.u_ind = [bicycle.u[3], *bicycle.u[5:7]]
 system.u_dep = [*bicycle.u[:3], bicycle.u[4], bicycle.u[7]]
 system.validate_system()
+
+try:
+    system.validate_system()
+except ValueError as e:
+    print("\n\nERROR : ")
+    display(e)
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
