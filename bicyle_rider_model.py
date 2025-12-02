@@ -379,11 +379,11 @@ variable_list = ['q1','q2','q3','q4','q5','q6','q7','q8',
 
 
 
-generate_model_file(['M_d','F_d'], [M_d,F_d], 
+generate_model_file('model_d',['M_d','F_d'], [M_d,F_d], 
                     variable_list, constants)
 
 
-import model_files.model
+# import model_files.model
 
 # #%% Numerical Evaluation
 

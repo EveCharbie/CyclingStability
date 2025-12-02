@@ -21,7 +21,8 @@ mapping_sympy2casadi = {
        'log': 'cas.log',
        'sqrt': 'cas.sqrt'}
 
-def generate_model_file(        
+def generate_model_file(     
+        file_name: str,
         list_function_names: list[str],
         sympy_expr: list[sm.matrices.dense.MutableDenseMatrix],
         variable_list: list[str],
@@ -33,8 +34,13 @@ def generate_model_file(
     ):
         
         n, m = np.shape(matrix)
+        
+        f.write(f"n={n}")
+        f.write('\n')
 
-        # with open(f'model_files\model.txt', 'w') as f:
+        f.write(f"m={m}")
+        f.write('\n')
+
         for i in range(n):
             for j in range(m):
                 
@@ -61,39 +67,35 @@ def generate_model_file(
                 f.write(f"{name}[{i},{j}]={name}_{i}_{j}")
                 f.write('\n')
 
-
-
+    with open(f'model_files\{file_name}.py', 'w') as f:
+        
+        f.write("import casadi as cas")
+        f.write("\n")
+        f.write("\n")
     
-    if True:
-        with open('model_files\model.py', 'w') as f:
+        #Declare casadi variables and constants
+        f.write("#Declare variables")
+        for var in variable_list:
             
-            f.write("import casadi as cas")
             f.write("\n")
-            f.write("\n")
+            f.write(f"{var} = cas.SX.sym('{var}', 1, 1)")
+        f.write("\n")
+        f.write("\n")
+    
         
-            #Declare casadi variables and constants
-            f.write("#Declare variables")
-            for var in variable_list:
-                
-                f.write("\n")
-                f.write(f"{var} = cas.SX.sym('{var}', 1, 1)")
+        f.write("#Declare contants")
+        for cons in constants.keys():
             f.write("\n")
-            f.write("\n")
-        
-            
-            f.write("#Declare contants")
-            for cons in constants.keys():
-                f.write("\n")
-                f.write(f"{cons} = cas.SX.sym('{cons}', 1, 1)")
-            f.write("\n")
-            f.write("\n")
-            print("Variables and constants declared with success")
+            f.write(f"{cons} = cas.SX.sym('{cons}', 1, 1)")
+        f.write("\n")
+        f.write("\n")
+        print("Variables and constants declared with success")
             
         #Declare each matrix element
 
-            if True:
-                for name, mat in zip(list_function_names, sympy_expr) :
-                    write_expr_in_txt_file(name, mat)
+    
+        for name, mat in zip(list_function_names, sympy_expr) :
+            write_expr_in_txt_file(name, mat)
             
         f.close()
 
