@@ -207,7 +207,8 @@ import casadi as cas
 
 
 def eval_num_full(
-        system: system.System,
+        system, #system.System returns this error :
+                #'AttributeError: 'System' object has no attribute 'System'
         x,
         tau,
         distu,
@@ -249,9 +250,11 @@ def sympy_to_casadi_function(
         Make sure every element of a matrix is a CasADi expression, so that blockcat can work.
         """
         rows = []
+        print(matrix)
         for row in matrix:
             new_row = []
             for elem in row:
+                # print(elem)
                 # replace raw ints/floats with CasADi constants
                 if type(elem) == sm.core.numbers.NaN:
                     elem = cas.SX(0)  # TODO: see why there are NaNs !
@@ -351,7 +354,8 @@ def sympy_to_casadi_function(
     for name, value in constants.items():
         casadi_mapping[str(name)] = float(value)
 
-    f = lambdify(sympy_var, sympy_expr, modules=casadi_mapping)
+    # sympy_expr = sympy_expr.simplify() #Can help to reduce the expr complexity
+    f = lambdify(sympy_var, sympy_expr.simplify(), modules=[casadi_mapping])
     f(x_list, steer_torque, disturbance)
     casadi_func = cas.Function(function_name, variable_list, [f(x_list, steer_torque, disturbance)])
     # ERROR: casadi expressions not iterable by design
@@ -365,39 +369,55 @@ def sympy_to_casadi_function(
 M_d = system.mass_matrix
 F_d = system.forcing
 
-#%% Numerical Evaluation
 
-"""
-The idea is to check if the conversion from sympy to casadi is correct.
-Evaluating the mass matric and the forcing vector with numerical values
-from the sympy and casadi expression then check if we get the same values.
-"""
+from sympy_to_casadi_v2 import generate_model_file
 
-_x = system.q.col_join(system.u)
-x = np.zeros(np.shape(_x))
-tau = np.ones(1)
-distu = np.ones(1)
-value_list = [0] * np.shape(_x)[0] + [1] + [1]
 
-print(eval_num_full(system, x, 1, 1))
+variable_list = ['q1','q2','q3','q4','q5','q6','q7','q8',
+                 'u1','u2','u3','u4','u5','u6','u7','u8',
+                 'steer_torque', 'disturbance']
 
-# Convertir M_m et F_m en CasADi
-f_M_func = sympy_to_casadi_function(
-    "M_d",
-    M_d,
-    (_x, steer_torque, disturbance),
-    constants,
-)
-f_F_func = sympy_to_casadi_function(
-    "F_d",
-    F_d,
-    (_x, steer_torque, disturbance),
-    constants,
-)
 
-# Erreur à ce niveau là
-print(np.array(f_M_func(*value_list)).astype(float))
-print(np.array(f_F_func(*value_list)).astype(float))
+
+generate_model_file(['M_d'], [M_d], 
+                    variable_list, constants)
+
+
+# import model_files.model
+
+# #%% Numerical Evaluation
+
+# """
+# The idea is to check if the conversion from sympy to casadi is correct.
+# Evaluating the mass matric and the forcing vector with numerical values
+# from the sympy and casadi expression then check if we get the same values.
+# """
+
+# _x = system.q.col_join(system.u)
+# x = np.zeros(np.shape(_x))
+# # tau = np.ones(1)
+# # distu = np.ones(1)
+# value_list = [0] * np.shape(_x)[0] + [1] + [1]
+
+# print(eval_num_full(system, x, 1, 1))
+
+# # Convertir M_m et F_m en CasADi
+# f_M_func = sympy_to_casadi_function(
+#     "M_d",
+#     M_d,
+#     (_x, steer_torque, disturbance),
+#     constants,
+# )
+# f_F_func = sympy_to_casadi_function(
+#     "F_d",
+#     F_d,
+#     (_x, steer_torque, disturbance),
+#     constants,
+# )
+
+# # Erreur à ce niveau là
+# print(np.array(f_M_func(*value_list)).astype(float))
+# print(np.array(f_F_func(*value_list)).astype(float))
 
 
 
