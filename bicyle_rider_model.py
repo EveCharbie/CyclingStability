@@ -366,8 +366,8 @@ def sympy_to_casadi_function(
 # Matrices extraction
 
 # M_d @ Xd + F_d = 0
-M_d = system.mass_matrix
-F_d = system.forcing
+M_m = system.mass_matrix_full
+F_m = system.forcing_full
 
 
 from sympy_to_casadi_v2 import generate_model_file
@@ -379,11 +379,29 @@ variable_list = ['q1','q2','q3','q4','q5','q6','q7','q8',
 
 
 
-generate_model_file('model_d',['M_d','F_d'], [M_d,F_d], 
+generate_model_file('model_d',['M_m','F_m'], [M_m, F_m], 
                     variable_list, constants)
 
 
-# import model_files.model
+from model_files.model_d import *
+
+
+M_m_inv = cas.inv(M_m)
+RHS = M_m_inv@F_m
+
+
+f_RHS = cas.Function(
+    'RHS', 
+    list_variables + list_constants, 
+    [RHS])
+
+x = [1] * np.shape(list_variables)[0]
+k = list(constants.values())
+
+RHS_num = np.array(f_RHS(*x+k)).astype(float)
+
+print(RHS_num)
+
 
 # #%% Numerical Evaluation
 

@@ -58,7 +58,7 @@ def generate_model_file(
                 f.write('\n')
                 print(f"{name}_{i}_{j} declared with success")
         
-        f.write(f"{name}=SX.zeros(n,m)")
+        f.write(f"{name}=cas.SX(n,m)")
         f.write("\n")
 
         
@@ -81,7 +81,16 @@ def generate_model_file(
             f.write(f"{var} = cas.SX.sym('{var}', 1, 1)")
         f.write("\n")
         f.write("\n")
-    
+        
+        f.write("list_variables = [")
+        f.write("\n")
+        
+        for var in variable_list:
+            f.write(f"{var},")
+            f.write("\n")
+        f.write("]")
+        f.write("\n")
+        f.write("\n")
         
         f.write("#Declare contants")
         for cons in constants.keys():
@@ -90,6 +99,16 @@ def generate_model_file(
         f.write("\n")
         f.write("\n")
         print("Variables and constants declared with success")
+        
+        f.write("list_constants = [")
+        f.write("\n")
+        
+        for cons in constants.keys():
+            f.write(f"{cons},")
+            f.write("\n")
+        f.write("]")
+        f.write("\n")
+        f.write("\n")
             
         #Declare each matrix element
 
