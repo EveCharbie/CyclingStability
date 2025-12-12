@@ -1,3 +1,5 @@
+import platform
+
 import sympy as sm
 import sympy.physics.mechanics as me
 import numpy as np
@@ -20,6 +22,10 @@ mapping_sympy2casadi = {
        'exp': 'cas.exp',
        'log': 'cas.log',
        'sqrt': 'cas.sqrt'}
+
+variable_list = ['q1','q2','q3','q4','q5','q6','q7','q8',
+                 'u1','u2','u3','u4','u5','u6','u7','u8',
+                 'steer_torque', 'disturbance']
 
 def generate_model_file(     
         file_name: str,
@@ -67,7 +73,12 @@ def generate_model_file(
                 f.write(f"{name}[{i},{j}]={name}_{i}_{j}")
                 f.write('\n')
 
-    with open(f'model_files\{file_name}.py', 'w') as f:
+    if platform.system() == 'Windows':
+        full_file_name = f'model_files\{file_name}.py'
+    else:
+        full_file_name = f'model_files/{file_name}.py'
+
+    with open(full_file_name, 'w') as f:
         
         f.write("import casadi as cas")
         f.write("\n")
@@ -117,26 +128,3 @@ def generate_model_file(
             write_expr_in_txt_file(name, mat)
             
         f.close()
-
-
-variable_list = ['q1','q2','q3','q4','q5','q6','q7','q8',
-                 'u1','u2','u3','u4','u5','u6','u7','u8',
-                 'steer_torque', 'disturbance']
-
-mapping_sympy2casadi = {
-       'Abs': 'cas.fabs',
-       'sin': 'cas.sin',
-       'cos': 'cas.cos',
-       'tan': 'cas.tan',
-       'asin': 'cas.asin',
-       'acos': 'cas.acos',
-       'atan': 'cas.atan',
-       'sinh': 'cas.sinh',
-       'cosh': 'cas.cosh',
-       'tanh': 'cas.tanh',
-       'asinh': 'cas.asinh',
-       'acosh': 'cas.acosh',
-       'atanh': 'cas.atanh',
-       'exp': 'cas.exp',
-       'log': 'cas.log',
-       'sqrt': 'cas.sqrt'}

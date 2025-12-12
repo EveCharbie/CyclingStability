@@ -2,15 +2,12 @@
 
 
 ## Coding steps
-1. Creation of the bicycle model using SimBRiM + translate it into CasADi/biorbd [bicycle_rider_model.py](bicycle_rider_model.py)
+1. Creation of the bicycle model using SimBRiM + translate it into CasADi/biorbd [bicycle_rider_model.py](bicycle_rider_model.py). This 
+will create a `model_files/model_d.py` file that will be used in the next steps.
 2. Stochastic optimal control problem definition and solution [SOCP_bike_trunk_torque_driven.py](SOCP_bike_trunk_torque_driven.py)
 
 
 ## Requirements
-
-Je ne sais pas il y a de réelles limitations mais pour l'instant ça tourne sous python 3.13.5 de mon coté.
-
-Quelques installations pour faire tourner le code qui produit les équations du mouvements, simule et crée l'animation.
 ```
 pip install symbrim
 pip install bicycleparameters
@@ -21,7 +18,7 @@ conda install -c conda-forge black ipython
 
 ## Overview du code
 
-_bicycle_rider_mode_ permet de produire les EOMs du vélo basique, montre aussi comment le simualer et l'animer.
+_bicycle_rider_model_ permet de produire les EOMs du vélo basique, montre aussi comment le simuler et l'animer. Il génère aussi le fichier _model_d.py_ qui contient la dynamique en casadi.
 
 _simulator_ est appelé par le _bicycle_rider_mode_ pour produire la simulation. 
 
