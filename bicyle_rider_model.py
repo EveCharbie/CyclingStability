@@ -33,7 +33,7 @@ from symbrim.brim import SideLeanSeatSpringDamper
 from symbrim.rider import PinElbowTorque, SphericalShoulderTorque
 from sympy.utilities.lambdify import lambdify
 
-from sympy_to_casadi_v2 import generate_model_file
+from sympy_to_casadi import generate_model_file
 
 
 def create_symbrim_model(simulation_flag: bool = False, visualization_flag: bool = False):
