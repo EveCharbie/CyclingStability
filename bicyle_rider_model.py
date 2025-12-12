@@ -18,7 +18,8 @@ Created on Tue Nov 25 11:08:14 2025
 # pip install symmeplot
 # conda install -c conda-forge casadi
 
-
+import pickle
+import platform
 import warnings
 from IPython.display import display
 import numpy as np
@@ -198,6 +199,23 @@ def create_symbrim_model(simulation_flag: bool = False, visualization_flag: bool
 
     return system, constants
 
+def export_constants(constants: dict[str, float]) -> None:
+    """
+    Export the constants to a pickle file for later use.
+
+    Parameters
+    ----------
+    constants : Dictionary of {symbol: value} for constant parameters
+    """
+
+    if platform.system() == 'Windows':
+        full_file_name = f'model_files\constants_d.pkl'
+    else:
+        full_file_name = f'model_files/constants_d.pkl'
+
+    with open(full_file_name, 'wb') as f:
+        pickle.dump(constants, f)
+
 def eval_num_full(system: me.System, constants: dict[str, float], x: np.ndarray, tau: float, distu: float) -> np.ndarray:
     """
     Evaluate the forward dynamics RHS numerically.
@@ -312,6 +330,8 @@ if __name__ == "__main__":
     distu = 0
 
     system, constants = create_symbrim_model(simulation_flag=False, visualization_flag=False)
+
+    export_constants(constants)
 
     eval_num_full(system, constants, x, tau, distu)
 

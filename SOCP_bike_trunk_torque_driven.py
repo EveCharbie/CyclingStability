@@ -33,6 +33,8 @@ from bioptim import (
 )
 from bioptim.examples.utils import ExampleUtils
 
+from model_files.bioptim_model import BikeModel
+
 
 def sensory_reference(
     time: cas.MX | cas.SX,
@@ -104,20 +106,21 @@ def prepare_socp(
         initial_cov=initial_cov,
     )
 
-    bio_model = StochasticTorqueBiorbdModel(
-        biorbd_model_path,  # TODO: change model
-        problem_type=problem_type,
-        with_cholesky=False,
-        n_noised_states=4,
-        n_noised_controls=2,
-        sensory_noise_magnitude=sensory_noise_magnitude,
-        motor_noise_magnitude=motor_noise_magnitude,
-        sensory_reference=sensory_reference,
-        n_references=4,  # This number must be in agreement with what is declared in sensory_reference
-        n_feedbacks=4,
-        use_sx=use_sx,
-        friction_coefficients=np.array([[0.05, 0.025], [0.025, 0.05]]),  # Friction helps for stability
-    )
+    bio_model = BikeModel()
+    # StochasticTorqueBiorbdModel(
+    #     biorbd_model_path,  # TODO: change model
+    #     problem_type=problem_type,
+    #     with_cholesky=False,
+    #     n_noised_states=4,
+    #     n_noised_controls=2,
+    #     sensory_noise_magnitude=sensory_noise_magnitude,
+    #     motor_noise_magnitude=motor_noise_magnitude,
+    #     sensory_reference=sensory_reference,
+    #     n_references=4,  # This number must be in agreement with what is declared in sensory_reference
+    #     n_feedbacks=4,
+    #     use_sx=use_sx,
+    #     friction_coefficients=np.array([[0.05, 0.025], [0.025, 0.05]]),  # Friction helps for stability
+    # )
 
     n_q = bio_model.nb_q
     n_qdot = bio_model.nb_qdot
@@ -254,8 +257,6 @@ def main():
     # --- Options --- #
     use_sx = True
     vizualize_sol_flag = True
-
-    biorbd_model_path = ExampleUtils.folder + "/models/LeuvenArmModel.bioMod"  # TODO: change model
 
     # --- Prepare the ocp --- #
     dt = 0.01

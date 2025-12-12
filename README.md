@@ -3,7 +3,7 @@
 
 ## Coding steps
 1. Creation of the bicycle model using SimBRiM + translate it into CasADi/biorbd [bicycle_rider_model.py](bicycle_rider_model.py). This 
-will create a `model_files/model_d.py` file that will be used in the next steps.
+will create a `model_files/model_d.py` and a `model_files/constants_d.py` file that will be used in the next steps.
 2. Stochastic optimal control problem definition and solution [SOCP_bike_trunk_torque_driven.py](SOCP_bike_trunk_torque_driven.py)
 
 
@@ -14,6 +14,7 @@ pip install bicycleparameters
 pip install symmeplot
 conda install -c conda-forge casadi
 conda install -c conda-forge black ipython
+conda install -c conda-forge biorbd
 ```
 
 ## Overview du code

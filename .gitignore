@@ -219,3 +219,5 @@ __marimo__/
 *.gz
 
 model_files/model_d.py
+
+model_files/constants_d.pkl
