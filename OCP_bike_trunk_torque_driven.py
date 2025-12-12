@@ -29,6 +29,7 @@ from bioptim import (
 
 from model_files.bioptim_model import BikeModel
 
+
 def prepare_ocp(
     final_time: float,
     n_shooting: int,
@@ -60,15 +61,15 @@ def prepare_ocp(
         ConstraintFcn.TRACK_STATE,
         key="qdot",
         node=Node.START,
-        min_bound=np.array([1, 0, 0, 0, 0, 0, 0, 0]),   # Start moving forward
-        max_bound=np.array([100, 0, 0, 0, 0, 0, 0, 0]),   # Start moving forward
+        min_bound=np.array([1, 0, 0, 0, 0, 0, 0, 0]),  # Start moving forward
+        max_bound=np.array([100, 0, 0, 0, 0, 0, 0, 0]),  # Start moving forward
     )
     constraints.add(
         ConstraintFcn.TRACK_STATE,
         key="q",
         node=Node.END,
-        min_bound=np.array([5, -10, 0, 0, 0, 0, 0, 0]),   # Start moving forward
-        max_bound=np.array([5, 10, 0, 0, 0, 0, 0, 0]),   # Start moving forward
+        min_bound=np.array([5, -10, 0, 0, 0, 0, 0, 0]),  # Start moving forward
+        max_bound=np.array([5, 10, 0, 0, 0, 0, 0, 0]),  # Start moving forward
     )
 
     # Dynamics
@@ -83,7 +84,9 @@ def prepare_ocp(
     q_max[:, 1] = [10] * 8
     q_min[:, 2] = [5, -10, -10, -10, -10, -10, 0, -10]  # End further away with zero stead angle
     q_max[:, 2] = [5, 10, 10, 10, 10, 10, 0, 10]  # End further away with zero stead angle
-    x_bounds.add("q", min_bound=q_min, max_bound=q_max, interpolation=InterpolationType.CONSTANT_WITH_FIRST_AND_LAST_DIFFERENT)
+    x_bounds.add(
+        "q", min_bound=q_min, max_bound=q_max, interpolation=InterpolationType.CONSTANT_WITH_FIRST_AND_LAST_DIFFERENT
+    )
 
     qdot_min = np.zeros((8, 3))
     qdot_max = np.zeros((8, 3))
@@ -93,12 +96,15 @@ def prepare_ocp(
     qdot_max[:, 1] = [100] * 8
     qdot_min[:, 2] = [-100, -100, 0, 0, 0, -100, 0, -100]  # End with zero stear velocity and instability
     qdot_max[:, 2] = [100, 100, 0, 0, 0, 100, 0, 100]  # End with zero stear velocity and instability
-    x_bounds.add("qdot", min_bound=qdot_min, max_bound=qdot_max, interpolation=InterpolationType.CONSTANT_WITH_FIRST_AND_LAST_DIFFERENT)
+    x_bounds.add(
+        "qdot",
+        min_bound=qdot_min,
+        max_bound=qdot_max,
+        interpolation=InterpolationType.CONSTANT_WITH_FIRST_AND_LAST_DIFFERENT,
+    )
 
     u_bounds = BoundsList()
-    u_bounds.add(
-        "tau", min_bound=[-10], max_bound=[10], interpolation=InterpolationType.CONSTANT
-    )
+    u_bounds.add("tau", min_bound=[-10], max_bound=[10], interpolation=InterpolationType.CONSTANT)
 
     # Initial guesses
     x_init = InitialGuessList()

@@ -46,12 +46,10 @@ def create_symbrim_model(simulation_flag: bool = False, visualization_flag: bool
     bicycle.rear_wheel = sb.KnifeEdgeWheel("rear_wheel")
     bicycle.rear_tire = sb.NonHolonomicTire("rear_tire")
 
-
     bicycle.ground = sb.FlatGround("ground")
     bicycle.front_frame = sb.RigidFrontFrame("front_frame")
     bicycle.front_wheel = sb.KnifeEdgeWheel("front_wheel")
     bicycle.front_tire = sb.NonHolonomicTire("front_tire")
-
 
     assert len(bicycle.submodels) == 5
     assert len(bicycle.connections) == 2
@@ -61,9 +59,7 @@ def create_symbrim_model(simulation_flag: bool = False, visualization_flag: bool
 
     normal = bicycle.ground.get_normal(bicycle.ground.origin)
 
-
     # Add loads and actuators
-
 
     # Gravity
     g = sm.symbols("g")
@@ -71,18 +67,18 @@ def create_symbrim_model(simulation_flag: bool = False, visualization_flag: bool
 
     # Disturbance
     disturbance = me.dynamicsymbols("disturbance")
-    system.add_loads(
-        me.Force(bicycle.rear_frame.saddle.point,
-                 disturbance * bicycle.rear_frame.wheel_hub.axis))
+    system.add_loads(me.Force(bicycle.rear_frame.saddle.point, disturbance * bicycle.rear_frame.wheel_hub.axis))
 
     # Steer torque
     steer_torque = me.dynamicsymbols("steer_torque")
     system.add_actuators(
-        me.TorqueActuator(steer_torque,
-                          bicycle.rear_frame.steer_hub.axis,
-                          bicycle.rear_frame.steer_hub.frame,
-                          bicycle.front_frame.steer_hub.frame))
-
+        me.TorqueActuator(
+            steer_torque,
+            bicycle.rear_frame.steer_hub.axis,
+            bicycle.rear_frame.steer_hub.frame,
+            bicycle.front_frame.steer_hub.frame,
+        )
+    )
 
     # Before forming the EoMs we need to specify which generalized coordinates
     # and speeds are independent and which are dependent.
@@ -103,30 +99,28 @@ def create_symbrim_model(simulation_flag: bool = False, visualization_flag: bool
         warnings.simplefilter("ignore")
         eoms = system.form_eoms(constraint_solver="CRAMER")
 
-
-    #The equations of motions are generated as a
+    # The equations of motions are generated as a
     #                                   "sympy.matrices.dense.MutableDenseMatrix"
 
-
-    #%% Parametrization
+    # %% Parametrization
 
     import bicycleparameters as bp
 
-    bike_params = bp.Bicycle("Browser", pathToData='data')
+    bike_params = bp.Bicycle("Browser", pathToData="data")
     # bike_params.add_rider("Jason", reCalc=True)
 
     constants = bicycle.get_param_values(bike_params)
     constants[g] = 9.81  # Don't forget to specify the gravitational constant.
 
-    print('\n\nConstants of the model:')
+    print("\n\nConstants of the model:")
     print(constants)
 
     missing_symbols = bicycle.get_all_symbols().difference(constants.keys())
 
-    print('\n\nIs there any missing constant? -->')
+    print("\n\nIs there any missing constant? -->")
     print(missing_symbols)
 
-    #%% Simulation
+    # %% Simulation
 
     if simulation_flag:
         from simulator import Simulator
@@ -147,13 +141,12 @@ def create_symbrim_model(simulation_flag: bool = False, visualization_flag: bool
         }
 
         simu.initialize()
-        print('Initial Conditions:')
+        print("Initial Conditions:")
         simu.initial_conditions
 
+        simu.solve([0, 5], solver="solve_ivp")
 
-        simu.solve([0,5], solver="solve_ivp")
-
-    #%% Visualization
+    # %% Visualization
 
     if visualization_flag:
 
@@ -166,16 +159,19 @@ def create_symbrim_model(simulation_flag: bool = False, visualization_flag: bool
 
         # Create some functions to interpolate the results.
         x_eval = CubicSpline(simu.t, simu.x.T)
-        r_eval = CubicSpline(simu.t, [[cf(t, x) for cf in simu.inputs.values()]
-                                         for t, x in zip(simu.t, simu.x.T)])
+        r_eval = CubicSpline(simu.t, [[cf(t, x) for cf in simu.inputs.values()] for t, x in zip(simu.t, simu.x.T)])
         p, p_vals = zip(*simu.constants.items())
         max_disturbance = r_eval(simu.t)[:, tuple(simu.inputs.keys()).index(disturbance)].max()
 
         # Plot the initial configuration of the model
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(8, 8))
         plotter = Plotter.from_model(bicycle, ax=ax)
-        plotter.add_vector(disturbance * bicycle.rear_frame.wheel_hub.axis / max_disturbance,
-                           bicycle.rear_frame.saddle.point, name="disturbance", color="r")
+        plotter.add_vector(
+            disturbance * bicycle.rear_frame.wheel_hub.axis / max_disturbance,
+            bicycle.rear_frame.saddle.point,
+            name="disturbance",
+            color="r",
+        )
         plotter.lambdify_system((system.q[:] + system.u[:], simu.inputs.keys(), p))
         plotter.evaluate_system(x_eval(0.0), r_eval(0.0), p_vals)
         plotter.plot()
@@ -191,13 +187,12 @@ def create_symbrim_model(simulation_flag: bool = False, visualization_flag: bool
 
         fps = 30
         ani = plotter.animate(
-            lambda ti: (x_eval(ti), r_eval(ti), p_vals),
-            frames=np.arange(0, simu.t[-1], 1 / fps),
-            blit=False)
+            lambda ti: (x_eval(ti), r_eval(ti), p_vals), frames=np.arange(0, simu.t[-1], 1 / fps), blit=False
+        )
         display(HTML(ani.to_jshtml(fps=fps)))
 
-
     return system, constants
+
 
 def export_constants(constants: dict[str, float]) -> None:
     """
@@ -208,15 +203,18 @@ def export_constants(constants: dict[str, float]) -> None:
     constants : Dictionary of {symbol: value} for constant parameters
     """
 
-    if platform.system() == 'Windows':
-        full_file_name = f'model_files\constants_d.pkl'
+    if platform.system() == "Windows":
+        full_file_name = f"model_files\constants_d.pkl"
     else:
-        full_file_name = f'model_files/constants_d.pkl'
+        full_file_name = f"model_files/constants_d.pkl"
 
-    with open(full_file_name, 'wb') as f:
+    with open(full_file_name, "wb") as f:
         pickle.dump(constants, f)
 
-def eval_num_full(system: me.System, constants: dict[str, float], x: np.ndarray, tau: float, distu: float) -> np.ndarray:
+
+def eval_num_full(
+    system: me.System, constants: dict[str, float], x: np.ndarray, tau: float, distu: float
+) -> np.ndarray:
     """
     Evaluate the forward dynamics RHS numerically.
 
@@ -245,27 +243,17 @@ def eval_num_full(system: me.System, constants: dict[str, float], x: np.ndarray,
     _x = system.q.col_join(system.u)
 
     # Define input symbols
-    steer_torque = me.dynamicsymbols('steer_torque')
-    disturbance = me.dynamicsymbols('disturbance')
+    steer_torque = me.dynamicsymbols("steer_torque")
+    disturbance = me.dynamicsymbols("disturbance")
 
     # Use tolist() to convert matrix to nested list
     M_list = M_m.tolist()
     F_list = F_m.tolist()
 
     # Lambdify the nested lists
-    f_M_m = lambdify(
-        (_x, _p, steer_torque, disturbance),
-        M_list,
-        modules='numpy',
-        cse=True
-    )
+    f_M_m = lambdify((_x, _p, steer_torque, disturbance), M_list, modules="numpy", cse=True)
 
-    f_F_m = lambdify(
-        (_x, _p, steer_torque, disturbance),
-        F_list,
-        modules='numpy',
-        cse=True
-    )
+    f_F_m = lambdify((_x, _p, steer_torque, disturbance), F_list, modules="numpy", cse=True)
 
     # Evaluate numerically - convert to numpy arrays
     M_m_num = np.array(f_M_m(x, _p_vals, tau, distu), dtype=float)
@@ -278,7 +266,8 @@ def eval_num_full(system: me.System, constants: dict[str, float], x: np.ndarray,
 
     return xdot
 
-#%% Conversion
+
+# %% Conversion
 def generate_casadi_file(system, constants):
 
     # Matrices extraction
@@ -287,12 +276,28 @@ def generate_casadi_file(system, constants):
     M_m = system.mass_matrix_full
     F_m = system.forcing_full
 
-    variable_list = ['q1','q2','q3','q4','q5','q6','q7','q8',
-                     'u1','u2','u3','u4','u5','u6','u7','u8',
-                     'steer_torque', 'disturbance']
+    variable_list = [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8",
+        "u1",
+        "u2",
+        "u3",
+        "u4",
+        "u5",
+        "u6",
+        "u7",
+        "u8",
+        "steer_torque",
+        "disturbance",
+    ]
 
-    generate_model_file('model_d',['M_m','F_m'], [M_m, F_m],
-                        variable_list, constants)
+    generate_model_file("model_d", ["M_m", "F_m"], [M_m, F_m], variable_list, constants)
 
     return M_m, F_m
 
@@ -306,26 +311,21 @@ def evaluation_casadi_file(constants: dict[str, float], x: np.ndarray, tau: floa
         F_m,
     )
 
-
     M_m_inv = cas.inv(M_m)
     RHS = M_m_inv @ F_m
 
-
-    f_RHS = cas.Function(
-        'RHS',
-        list_variables + list_constants,
-        [RHS])
+    f_RHS = cas.Function("RHS", list_variables + list_constants, [RHS])
 
     k = list(constants.values())
 
-    RHS_num = np.array(f_RHS(*x.tolist()+[tau]+[distu]+k)).astype(float)
+    RHS_num = np.array(f_RHS(*x.tolist() + [tau] + [distu] + k)).astype(float)
 
     print("CasADi RHS : ", RHS_num)
 
 
 if __name__ == "__main__":
 
-    x = np.ones((16, ))
+    x = np.ones((16,))
     tau = 1
     distu = 0
 
@@ -338,7 +338,3 @@ if __name__ == "__main__":
     # M_m, F_m = generate_casadi_file(system, constants)
 
     evaluation_casadi_file(constants, x, tau, distu)
-
-
-
-

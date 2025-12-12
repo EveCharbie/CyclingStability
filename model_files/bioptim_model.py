@@ -1,6 +1,7 @@
 """
 This script implements a custom model to work with bioptim.
 """
+
 import pickle
 import platform
 import casadi as cas
@@ -30,19 +31,17 @@ class BikeModel(StateDynamics):
         self.declare_constants()
         self.declare_dynamics()
 
-
     def declare_constants(self) -> None:
 
-        if platform.system() == 'Windows':
-            full_file_name = f'model_files\constants_d.pkl'
+        if platform.system() == "Windows":
+            full_file_name = f"model_files\constants_d.pkl"
         else:
-            full_file_name = f'model_files/constants_d.pkl'
+            full_file_name = f"model_files/constants_d.pkl"
 
         with open(full_file_name, "rb") as f:
             constants = pickle.load(f)
 
         self.constants = constants
-
 
     def declare_dynamics(self) -> None:
 
@@ -52,39 +51,46 @@ class BikeModel(StateDynamics):
             M_m,
             F_m,
         )
+
         self.list_variables = list_variables
 
         M_m_inv = cas.inv(M_m)
         RHS = M_m_inv @ F_m
 
-        f_RHS = cas.Function(
-            'RHS',
-            list_variables + list_constants,
-            [RHS])
+        f_RHS = cas.Function("RHS", list_variables + list_constants, [RHS])
 
         k = list(self.constants.values())
 
         self.forward_dynamics = cas.Function(
             "forward_dynamics",
             [self.q, self.qdot, self.tau],
-            [f_RHS(
-                *([self.q[0],
-                self.q[1],
-                self.q[2],
-                self.q[3],
-                self.q[4],
-                self.q[5],
-                self.q[6],
-                self.q[7],
-                self.qdot[0],
-                self.qdot[1],
-                self.qdot[2],
-                self.qdot[3],
-                self.qdot[4],
-                self.qdot[5],
-                self.qdot[6],
-                self.qdot[7],
-                self.tau[0], 0] + k))]
+            [
+                f_RHS(
+                    *(
+                        [
+                            self.q[0],
+                            self.q[1],
+                            self.q[2],
+                            self.q[3],
+                            self.q[4],
+                            self.q[5],
+                            self.q[6],
+                            self.q[7],
+                            self.qdot[0],
+                            self.qdot[1],
+                            self.qdot[2],
+                            self.qdot[3],
+                            self.qdot[4],
+                            self.qdot[5],
+                            self.qdot[6],
+                            self.qdot[7],
+                            self.tau[0],
+                            0,
+                        ]
+                        + k
+                    )
+                )
+            ],
         )
 
     def serialize(self) -> tuple[Callable, dict]:
@@ -105,7 +111,6 @@ class BikeModel(StateDynamics):
     @property
     def name_dofs(self):
         return [f"dof_{i}" for i in range(self.nb_q)]
-
 
     @property
     def name(self) -> str:
