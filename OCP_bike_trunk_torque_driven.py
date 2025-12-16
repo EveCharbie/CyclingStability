@@ -73,7 +73,7 @@ def prepare_ocp(
     )
 
     # Dynamics
-    dynamics = DynamicsOptions(expand_dynamics=True)  # Depends if the model dynamics is RAM expensive
+    dynamics = DynamicsOptions(expand_dynamics=False)
 
     # Bounds
     x_bounds = BoundsList()
@@ -112,7 +112,7 @@ def prepare_ocp(
     x_init.add("qdot", initial_guess=[0] * n_q, interpolation=InterpolationType.CONSTANT)
 
     u_init = InitialGuessList()
-    u_init.add("tau", initial_guess=[0] * n_q, interpolation=InterpolationType.CONSTANT)
+    u_init.add("tau", initial_guess=[0], interpolation=InterpolationType.CONSTANT)
 
     return OptimalControlProgram(
         bio_model,
@@ -137,7 +137,7 @@ def main():
     vizualize_sol_flag = True
 
     # --- Prepare the ocp --- #
-    dt = 0.01
+    dt = 0.1
     final_time = 1.0  # TODO: see if we could go up to 10s
     n_shooting = int(final_time / dt)
 

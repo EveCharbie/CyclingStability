@@ -186,6 +186,6 @@ class BikeModel(StateDynamics):
         tau = DynamicsFunctions.get(nlp.controls["tau"], controls)
 
         return DynamicsEvaluation(
-            dxdt=cas.vertcat(qdot, self.forward_dynamics(q, qdot, tau)),
+            dxdt=self.forward_dynamics(q, qdot, tau),
             defects=None,
         )
