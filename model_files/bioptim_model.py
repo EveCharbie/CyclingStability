@@ -21,12 +21,12 @@ class BikeModel(StateDynamics):
     def __init__(self):
         super().__init__()
 
-        self.q = cas.SX.sym("q", 8)
-        self.qdot = cas.SX.sym("qdot", 8)
-        self.tau = cas.SX.sym("tau", 1)
+        self.q = cas.MX.sym("q", 8)
+        self.qdot = cas.MX.sym("qdot", 8)
+        self.tau = cas.MX.sym("tau", 1)
         self.contact_types = ()
         self.fatigue = None
-        self.list_variables: list[cas.SX.sym] = None  # Will be filled by declare_dynamics
+        self.list_variables: list[cas.MX.sym] = None  # Will be filled by declare_dynamics
 
         self.declare_constants()
         self.declare_dynamics()
@@ -169,11 +169,11 @@ class BikeModel(StateDynamics):
         """
         Parameters
         ----------
-        states: MX | SX
+        states: MX
             The state of the system
-        controls: MX | SX
+        controls: MX
             The controls of the system
-        parameters: MX | SX
+        parameters: MX
             The parameters acting on the system
         nlp: NonLinearProgram
             A reference to the phase
