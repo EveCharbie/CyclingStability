@@ -34,10 +34,6 @@ def prepare_ocp(
     final_time: float,
     n_shooting: int,
     polynomial_degree: int,
-    q_opt: np.ndarray = None,
-    qdot_opt: np.ndarray = None,
-    tau_opt: np.ndarray = None,
-    use_sx=False,
 ) -> OptimalControlProgram:
 
     bio_model = BikeModel()
@@ -127,13 +123,12 @@ def prepare_ocp(
         constraints=constraints,
         control_type=ControlType.CONSTANT_WITH_LAST_NODE,
         n_threads=1,
-        use_sx=use_sx,
+        use_sx=False,
     )
 
 
 def main():
     # --- Options --- #
-    use_sx = True
     vizualize_sol_flag = True
 
     # --- Prepare the ocp --- #
@@ -155,7 +150,6 @@ def main():
         final_time=final_time,
         n_shooting=n_shooting,
         polynomial_degree=3,
-        use_sx=use_sx,
     )
 
     sol_ocp = ocp.solve(solver)

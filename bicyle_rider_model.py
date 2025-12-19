@@ -335,6 +335,6 @@ if __name__ == "__main__":
 
     eval_num_full(system, constants, x, tau, distu)
 
-    # M_m, F_m = generate_casadi_file(system, constants)
+    M_m, F_m = generate_casadi_file(system, constants)
 
     evaluation_casadi_file(constants, x, tau, distu)
