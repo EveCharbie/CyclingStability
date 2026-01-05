@@ -221,3 +221,5 @@ __marimo__/
 model_files/model_d.py
 
 model_files/constants_d.pkl
+
+*.pkl
