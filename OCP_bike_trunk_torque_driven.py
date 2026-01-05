@@ -153,8 +153,22 @@ def prepare_ocp(
 
     # Initial guesses
     x_init = InitialGuessList()
-    x_init.add("q", initial_guess=[0] * n_q, interpolation=InterpolationType.CONSTANT)
-    x_init.add("qdot", initial_guess=[0] * n_q, interpolation=InterpolationType.CONSTANT)
+    q_init = np.zeros((n_q, n_shooting + 1))
+    q_init[0, :] = np.linspace(0, 5, n_shooting + 1)  # Rear wheel x from 0 to 5m
+    q_init[5, :] = np.linspace(0, 5, n_shooting + 1)  # Distance / wheel circumference (assumed radius of 1m) * 2pi -> wheel angle
+    q_init[7, :] = np.linspace(0, 5, n_shooting + 1)  # Distance / wheel circumference (assumed radius of 1m) * 2pi -> wheel angle
+    x_init.add("q", initial_guess=q_init, interpolation=InterpolationType.EACH_FRAME)
+    qdot_init = [
+        5,  # Start with some forward translational speed
+        0,  # Zero sideways translational speed
+        0,
+        0,
+        0,
+        2*np.pi,  # Start with some positive forward rear wheel rotation speed
+        0,
+        2*np.pi,  # Start with some positive forward front wheel rotation speed
+    ]
+    x_init.add("qdot", initial_guess=qdot_init, interpolation=InterpolationType.CONSTANT)
 
     u_init = InitialGuessList()
     u_init.add("tau", initial_guess=[0], interpolation=InterpolationType.CONSTANT)
@@ -187,7 +201,7 @@ def main():
 
     # Solver parameters
     solver = Solver.IPOPT(show_online_optim=False, show_options=dict(show_bounds=True))
-    solver.set_linear_solver("mumps")  # TODO: change for MA97
+    solver.set_linear_solver("ma57")  # "mumps" is the simple but bad option, # TODO: change for MA97 ?
     solver.set_tol(1e-6)  # TODO: check which dynamics consistency is needed to answer the question
     solver.set_maximum_iterations(10000)
     # solver.set_hessian_approximation("limited-memory")
