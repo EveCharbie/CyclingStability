@@ -48,25 +48,6 @@ def prepare_ocp(
 
     # Constraints
     constraints = ConstraintList()
-    constraints.add(
-        ConstraintFcn.TRACK_STATE,
-        key="q",
-        node=Node.START,
-    )
-    constraints.add(
-        ConstraintFcn.TRACK_STATE,
-        key="qdot",
-        node=Node.START,
-        min_bound=np.array([1, 0, 0, 0, 0, 0, 0, 0]),  # Start moving forward
-        max_bound=np.array([100, 0, 0, 0, 0, 0, 0, 0]),  # Start moving forward
-    )
-    constraints.add(
-        ConstraintFcn.TRACK_STATE,
-        key="q",
-        node=Node.END,
-        min_bound=np.array([5, -10, 0, 0, 0, 0, 0, 0]),  # Start moving forward
-        max_bound=np.array([5, 10, 0, 0, 0, 0, 0, 0]),  # Start moving forward
-    )
 
     # Dynamics
     dynamics = DynamicsOptions(expand_dynamics=False)
@@ -74,24 +55,92 @@ def prepare_ocp(
     # Bounds
     x_bounds = BoundsList()
 
-    q_min = np.zeros((8, 3))
-    q_max = np.zeros((8, 3))
-    q_min[:, 1] = [-10] * 8
-    q_max[:, 1] = [10] * 8
-    q_min[:, 2] = [5, -10, -10, -10, -10, -10, 0, -10]  # End further away with zero stead angle
-    q_max[:, 2] = [5, 10, 10, 10, 10, 10, 0, 10]  # End further away with zero stead angle
+    q_min = np.zeros((8, 3))  # Start with everything at zero
+    q_max = np.zeros((8, 3))  # Start with everything at zero
+    q_min[:, 1] = [0,  # The bike should only translate forward
+                   -5,
+                   -10,
+                   -10,
+                   -10,
+                   0,  # The rear wheel should only rotate forward
+                   -10,
+                   0 # The front wheel should only rotate forward
+                   ]
+    q_max[:, 1] = [5,
+                   5,
+                   10,
+                   10,
+                   10,
+                   100, # The rear wheel should rotate forward
+                   10,   # Zero stear angle at the end
+                   100, # The front wheel should rotate forward
+                   ]
+    q_min[:, 2] = [5,  # The rear wheel contact point ends 5m forward
+                   0,  # The rear wheel contact point ends without lateral translation
+                   -10,  # No somersault rotation (does this need to be constrained ?, Holonomic should take care of it ?)
+                   -10,
+                   -10,
+                   0,  # The rear wheel should rotate forward
+                   0,  # Zero stear angle at the end
+                   0 # The front wheel should rotate forward
+                   ]
+    q_max[:, 2] = [5,   # The rear wheel contact point ends 5m forward
+                   0,   # The rear wheel contact point ends without lateral translation
+                   10,   # No somersault rotation (does this need to be constrained ?, Holonomic should take care of it ?)
+                   10,
+                   10,
+                   100, # The rear wheel should rotate forward
+                   0,   # Zero stear angle at the end
+                   100, # The front wheel should rotate forward
+                   ]
     x_bounds.add(
         "q", min_bound=q_min, max_bound=q_max, interpolation=InterpolationType.CONSTANT_WITH_FIRST_AND_LAST_DIFFERENT
     )
 
     qdot_min = np.zeros((8, 3))
     qdot_max = np.zeros((8, 3))
-    qdot_min[:, 0] = [5, 0, 0, 0, 0, 0, 0, 0]  # Start with some forward speed
-    qdot_max[:, 0] = [5, 0, 0, 0, 0, 0, 0, 0]  # Start with some forward speed
+    qdot_min[:, 0] = [
+        1,  # Start with some forward translational speed
+        0,  # Zero sideways translational speed
+        0,
+        0,
+        0,
+        1,  # Start with some positive forward rear wheel rotation speed
+        0,
+        1,  # Start with some positive forward front wheel rotation speed
+    ]
+    qdot_max[:, 0] = [
+        10,  # Start with some forward translational speed
+        0,  # Zero sideways translational speed
+        0,
+        0,
+        0,
+        100,  # Start with some positive forward rear wheel rotation speed
+        0,
+        100,  # Start with some positive forward front wheel rotation speed
+    ]
     qdot_min[:, 1] = [-100] * 8
     qdot_max[:, 1] = [100] * 8
-    qdot_min[:, 2] = [-100, -100, 0, 0, 0, -100, 0, -100]  # End with zero stear velocity and instability
-    qdot_max[:, 2] = [100, 100, 0, 0, 0, 100, 0, 100]  # End with zero stear velocity and instability
+    qdot_min[:, 2] = [
+        -100,
+        -100,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+    ]  # End with zero stear velocity and instability
+    qdot_max[:, 2] = [
+        100,
+        100,
+        0,
+        0,
+        0,
+        100,
+        0,
+        100,
+    ]  # End with zero stear velocity and instability
     x_bounds.add(
         "qdot",
         min_bound=qdot_min,
@@ -132,12 +181,12 @@ def main():
     vizualize_sol_flag = True
 
     # --- Prepare the ocp --- #
-    dt = 0.1
-    final_time = 1.0  # TODO: see if we could go up to 10s
+    dt = 1
+    final_time = 5.0  # TODO: see if we could go up to 10s
     n_shooting = int(final_time / dt)
 
     # Solver parameters
-    solver = Solver.IPOPT(show_online_optim=False)
+    solver = Solver.IPOPT(show_online_optim=False, show_options=dict(show_bounds=True))
     solver.set_linear_solver("mumps")  # TODO: change for MA97
     solver.set_tol(1e-6)  # TODO: check which dynamics consistency is needed to answer the question
     solver.set_maximum_iterations(10000)
@@ -153,7 +202,7 @@ def main():
     )
 
     sol_ocp = ocp.solve(solver)
-    # sol_socp.graphs()
+    sol_ocp.graphs(save_name="results/very_simple_torque_driven_ocp_cycling_graph")
 
     states = sol_ocp.stepwise_states(to_merge=SolutionMerge.NODES)
     controls = sol_ocp.stepwise_controls(to_merge=SolutionMerge.NODES)
@@ -168,7 +217,7 @@ def main():
     }
 
     # --- Save the results --- #
-    with open(f"very_simple_torque_driven_ocp_cycling.pkl", "wb") as file:
+    with open(f"results/very_simple_torque_driven_ocp_cycling.pkl", "wb") as file:
         pickle.dump(data, file)
 
     # --- Visualize the results --- #
