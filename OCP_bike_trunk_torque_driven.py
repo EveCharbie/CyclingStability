@@ -32,6 +32,7 @@ from model_files.bioptim_model import BikeModel
 
 def prepare_ocp(
     final_time: float,
+    final_position: float,
     n_shooting: int,
     polynomial_degree: int,
 ) -> OptimalControlProgram:
@@ -75,7 +76,7 @@ def prepare_ocp(
                    10,   # Zero stear angle at the end
                    100, # The front wheel should rotate forward
                    ]
-    q_min[:, 2] = [5,  # The rear wheel contact point ends 5m forward
+    q_min[:, 2] = [final_position,  # The rear wheel contact point ends forward
                    0,  # The rear wheel contact point ends without lateral translation
                    -10,  # No somersault rotation (does this need to be constrained ?, Holonomic should take care of it ?)
                    -10,
@@ -84,7 +85,7 @@ def prepare_ocp(
                    0,  # Zero stear angle at the end
                    0 # The front wheel should rotate forward
                    ]
-    q_max[:, 2] = [5,   # The rear wheel contact point ends 5m forward
+    q_max[:, 2] = [final_position,   # The rear wheel contact point ends forward
                    0,   # The rear wheel contact point ends without lateral translation
                    10,   # No somersault rotation (does this need to be constrained ?, Holonomic should take care of it ?)
                    10,
@@ -154,12 +155,12 @@ def prepare_ocp(
     # Initial guesses
     x_init = InitialGuessList()
     q_init = np.zeros((n_q, n_shooting + 1))
-    q_init[0, :] = np.linspace(0, 5, n_shooting + 1)  # Rear wheel x from 0 to 5m
-    q_init[5, :] = np.linspace(0, 5, n_shooting + 1)  # Distance / wheel circumference (assumed radius of 1m) * 2pi -> wheel angle
-    q_init[7, :] = np.linspace(0, 5, n_shooting + 1)  # Distance / wheel circumference (assumed radius of 1m) * 2pi -> wheel angle
+    q_init[0, :] = np.linspace(0, final_position, n_shooting + 1)  # Rear wheel x from 0 to final_position
+    q_init[5, :] = np.linspace(0, final_position, n_shooting + 1)  # Distance / wheel circumference (assumed radius of 1m) * 2pi -> wheel angle
+    q_init[7, :] = np.linspace(0, final_position, n_shooting + 1)  # Distance / wheel circumference (assumed radius of 1m) * 2pi -> wheel angle
     x_init.add("q", initial_guess=q_init, interpolation=InterpolationType.EACH_FRAME)
     qdot_init = [
-        5,  # Start with some forward translational speed
+        final_position/final_time,  # Start with some forward translational speed
         0,  # Zero sideways translational speed
         0,
         0,
@@ -195,8 +196,9 @@ def main():
     vizualize_sol_flag = True
 
     # --- Prepare the ocp --- #
-    dt = 1
-    final_time = 5.0  # TODO: see if we could go up to 10s
+    dt = 0.1
+    final_time = 1  # TODO: see if we could go up to 10s
+    final_position = 0.3  # 30 cm
     n_shooting = int(final_time / dt)
 
     # Solver parameters
@@ -211,12 +213,13 @@ def main():
 
     ocp = prepare_ocp(
         final_time=final_time,
+        final_position=final_position,
         n_shooting=n_shooting,
         polynomial_degree=3,
     )
 
     sol_ocp = ocp.solve(solver)
-    sol_ocp.graphs(save_name="results/very_simple_torque_driven_ocp_cycling_graph")
+    sol_ocp.graphs(show_bounds=True, save_name="results/very_simple_torque_driven_ocp_cycling_graph")
 
     states = sol_ocp.stepwise_states(to_merge=SolutionMerge.NODES)
     controls = sol_ocp.stepwise_controls(to_merge=SolutionMerge.NODES)
