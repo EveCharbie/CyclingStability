@@ -25,9 +25,61 @@ from bioptim import (
     SolutionMerge,
     DynamicsOptions,
     VariableScaling,
+    PenaltyController,
 )
 
 from model_files.bioptim_model import BikeModel
+
+
+def custom_indep_dof_continuity(controller: PenaltyController) -> cas.MX:
+    """
+    Used to define continuity constraints on independent degrees of freedom only.
+    The continuity of dependent degrees of freedom is ensured by holonomic constraints included in the dynamics of the system directly.
+    """
+    dependent_q_indices =    [0, 1, 2, 3,   5, 6, 7]
+    dependent_qdot_indices = [         3,   5, 6,  ]
+    indices_to_keep = (np.hstack((np.array(dependent_q_indices), np.array(dependent_qdot_indices) + 8))).tolist()
+
+    if controller.control_type in (
+            ControlType.CONSTANT,
+            ControlType.CONSTANT_WITH_LAST_NODE,
+    ):
+        u = controller.controls.cx_start
+    elif controller.control_type == ControlType.LINEAR_CONTINUOUS:
+        u = cas.horzcat(controller.controls.cx_start, controller.controls.cx_end)
+    else:
+        raise NotImplementedError(f"Dynamics with {controller.control_type} is not implemented yet")
+
+    t_span = controller.t_span.cx
+    continuity = controller.states.cx_end[indices_to_keep]
+    if controller.get_nlp.dynamics_type.ode_solver.is_direct_collocation:
+        states_cx = cas.horzcat(*([controller.states.cx_start] + controller.states.cx_intermediates_list))
+        algebraic_states_cx = cas.horzcat(
+            *([controller.algebraic_states.cx_start] + controller.algebraic_states.cx_intermediates_list)
+        )
+
+        integrated = controller.integrate(
+            t_span=t_span,
+            x0=states_cx,
+            u=u,
+            p=controller.parameters.cx,
+            a=algebraic_states_cx,
+            d=controller.numerical_timeseries.cx,
+        )
+        continuity -= integrated["xf"][indices_to_keep]
+        continuity = cas.vertcat(continuity, integrated["defects"][indices_to_keep])
+
+    else:
+        continuity -= controller.integrate(
+            t_span=t_span,
+            x0=controller.states.cx_start,
+            u=u,
+            p=controller.parameters.cx_start,
+            a=controller.algebraic_states.cx_start,
+            d=controller.numerical_timeseries.cx,
+        )["xf"][indices_to_keep]
+
+    return continuity
 
 
 def prepare_ocp(
@@ -49,9 +101,16 @@ def prepare_ocp(
 
     # Constraints
     constraints = ConstraintList()
+    constraints.add(
+        custom_indep_dof_continuity,
+        node=Node.ALL_SHOOTING,
+        integrate=True,
+        explicit_derivative=True,
+        multi_thread=True,
+    )
 
     # Dynamics
-    dynamics = DynamicsOptions(expand_dynamics=False)
+    dynamics = DynamicsOptions(expand_dynamics=False, skip_continuity=True)
 
     # Bounds
     x_bounds = BoundsList()
