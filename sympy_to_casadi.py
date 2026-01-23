@@ -45,6 +45,16 @@ variable_list = [
     "disturbance",
 ]
 
+mapping_derivatives = {
+    "Derivative(q1, t)": "u1",
+    "Derivative(q2, t)": "u2",
+    "Derivative(q3, t)": "u3",
+    "Derivative(q4, t)": "u4",
+    "Derivative(q5, t)": "u5",
+    "Derivative(q6, t)": "u6",
+    "Derivative(q7, t)": "u7",
+    "Derivative(q8, t)": "u8"}
+
 
 def generate_model_file(
     file_name: str,
@@ -78,6 +88,9 @@ def generate_model_file(
 
                 for key in mapping_sympy2casadi.keys():
                     expr = expr.replace(f"{key}(", f"{mapping_sympy2casadi[key]}(")
+                    
+                for key in mapping_derivatives.keys():
+                        expr = expr.replace(f"{key}", f"{mapping_derivatives[key]}")
 
                 f.write(f"{name}_{i}_{j}={expr}")
 
