@@ -23,10 +23,11 @@ import platform
 import warnings
 from IPython.display import display
 import numpy as np
-import casadi as cas
+#import casadi as cas
 
 import sympy as sm
 import sympy.physics.mechanics as me
+from sympy.physics.mechanics import System
 
 import symbrim as sb
 from symbrim.bicycle import RigidRearFrameMoore, WhippleBicycleMoore
@@ -35,6 +36,8 @@ from symbrim.rider import PinElbowTorque, SphericalShoulderTorque
 from sympy.utilities.lambdify import lambdify
 
 from sympy_to_casadi import generate_model_file
+
+from typing import Dict, Any
 
 
 def create_symbrim_model(simulation_flag: bool = False, visualization_flag: bool = False):
@@ -82,6 +85,9 @@ def create_symbrim_model(simulation_flag: bool = False, visualization_flag: bool
 
     # Before forming the EoMs we need to specify which generalized coordinates
     # and speeds are independent and which are dependent.
+
+    #q indep : q1, q2, q3, q4, q6, q7, q8
+    #u indep : u4, u6, u7
 
     system.q_ind = [*bicycle.q[:4], *bicycle.q[5:]]
     system.q_dep = [bicycle.q[4]]
@@ -268,11 +274,12 @@ def eval_num_full(
 
 
 # %% Conversion
-def generate_casadi_file(system, constants):
+def generate_casadi_file_full(system, constants): #Not used so far
 
+    """Generates python file with casadi structure containing the full dynamics equations"""
     # Matrices extraction
 
-    # M_d @ Xd + F_d = 0
+    # M_m @ X_m + F_m = 0
     M_m = system.mass_matrix_full
     F_m = system.forcing_full
 
@@ -300,6 +307,56 @@ def generate_casadi_file(system, constants):
     generate_model_file("model_d", ["M_m", "F_m"], [M_m, F_m], variable_list, constants)
 
     return M_m, F_m
+
+def generate_casadi_file_indep_dynamics(system : System, constants : Dict[str, Any]) -> None:
+
+    """Generates python file with casadi structure containing :
+        - dynamics of indep generalized speed (u4, u6, u7),
+        - 4 non-holomonic constrains,
+        - 1 holonomic constrain,
+        - 8 kinematics differential equations"""
+
+    # 3 dynamics equations of indep variables, M_d @ X_d + F_d = 0
+    M_u4_u6_u7 = system.mass_matrix[:3,:]
+    F_u4_u6_u7 = system.forcing[:3,:]
+    
+    # 4 non-holonomic contstains + 1 holonomic constrain
+    nh_cons = system.nonholonomic_constraints
+    h_cons = system.holonomic_constraints
+    
+    #kinematics differential equations u=q_dot
+    kdes = system.kdes
+    
+    expr_list = [M_u4_u6_u7, F_u4_u6_u7,
+                 nh_cons, h_cons, kdes]
+    
+    names_list = ['M_u4_u6_u7', 'F_u4_u6_u7',
+                 'nh_cons', 'h_cons', 'kdes']
+
+    variable_list = [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8",
+        "u1",
+        "u2",
+        "u3",
+        "u4",
+        "u5",
+        "u6",
+        "u7",
+        "u8",
+        "steer_torque",
+        "disturbance",
+    ]
+
+    generate_model_file("model_indep_dynamics", names_list, expr_list, variable_list, constants)
+
+    # return M_u4_u6_u7, F_u4_u6_u7
 
 
 def evaluation_casadi_file(constants: dict[str, float], x: np.ndarray, tau: float, distu: float):
@@ -333,8 +390,8 @@ if __name__ == "__main__":
 
     export_constants(constants)
 
-    eval_num_full(system, constants, x, tau, distu)
+    # eval_num_full(system, constants, x, tau, distu)
 
-    M_m, F_m = generate_casadi_file(system, constants)
+    generate_casadi_file_indep_dynamics(system, constants)
 
-    evaluation_casadi_file(constants, x, tau, distu)
+    # evaluation_casadi_file(constants, x, tau, distu)

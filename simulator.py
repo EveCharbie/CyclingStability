@@ -223,6 +223,9 @@ class Simulator:
             (self.system.u_dep, self.system.q, self.system.u_ind, self._p), velocity_constraints[:], cse=True
         )
         # Fix for https://github.com/numba/numba/issues/3709
+        
+        # print('HERE', self.system.q.col_join(self.system.u))
+        
         self._eval_eoms_matrices = lambdify(
             (t, self.system.q.col_join(self.system.u), self._p, self._r),
             (
@@ -231,6 +234,7 @@ class Simulator:
             ),
             cse=True,
         )
+        
         self.solve_initial_conditions()
         self._initialized = True
 
