@@ -25,27 +25,61 @@ from scipy.interpolate import CubicSpline
 
 from symbrim.utilities.plotting import Plotter
 
+# =============================================================================
+# Generates N models and compile them
+# =============================================================================
+
+
+# model_names = ['m1']
 model_names = ['m1','m2']
+NUM_MODELS = len(model_names)
 
-t1, x1, r1, eoms1, p1, bicycle1, disturbance_1 = generate_model(model_names[0])
-t2, x2, r2, eoms2, p2, bicycle2, disturbance_2 = generate_model(model_names[1])
 
-t = t1
-x = x1.col_join(x2)
-r = r1.col_join(r2)
-eoms = eoms1.col_join(eoms2)
-bicycles = [bicycle1, bicycle2]
-p = p1
-disturbance = disturbance_1.col_join(disturbance_2)
+t_list, x_list, r_list, eoms_list, p_list, bicycle_list, disturbance_list = [],[],[],[],[],[],[]
+
+for model in model_names:
+    t_model, x_model, r_model, eoms_model, p_model, bicycle_model, disturbance_model = generate_model(model)
+    
+    t_list.append(t_model)
+    x_list.append(x_model)
+    r_list.append(r_model)
+    eoms_list.append(eoms_model)
+    p_list.append(p_model)
+    bicycle_list.append(bicycle_model)
+    disturbance_list.append(disturbance_model)
+
+
+t = t_list[0]
+x = x_list[0]
+r = r_list[0]
+eoms = eoms_list[0]
+p = p_list[0]
+disturbance = disturbance_list[0]
+
+if NUM_MODELS>1:
+    for k, model in enumerate(model_names):
+        x = x.col_join(x_list[k])
+        r = r.col_join(r_list[k])
+        eoms = eoms.col_join(eoms_list[k])
+        disturbance = disturbance.col_join(disturbance_list[k])
+
+
+
+# t = t1
+# x = x1
+# r = r1
+# eoms = eoms1
+# bicycles = [bicycle1]
+# p = p1
+# disturbance = disturbance_1
 
 param, param_vals = zip(*p.items())
 
 
 
 
-NUM_MODELS = 2
-NUM_STATES = len(x1)
-NUM_INPUTS = len(r1)
+NUM_STATES = 16
+NUM_INPUTS = 1
 
 NUM_STATES_TOT = NUM_MODELS*NUM_STATES
 NUM_INPUTS_TOT = NUM_MODELS*NUM_INPUTS
@@ -153,7 +187,7 @@ def generate_bounds_and_contstraints():
         steer_torque = r[model_index]
 
         bounds[q1]= (-0.1, SPEED*DURATION + 0.1)
-        bounds[q2]= (-3, 3) #Si large la vélo est tabilisé mais part sur le coté
+        bounds[q2]= (-2, 2) #Si large la vélo est tabilisé mais part sur le coté
         bounds[q3]= (-1.0, 1.0)
         bounds[q4]= (-1.0, 1.0)
         bounds[q5]= (-1, 1)
@@ -176,9 +210,9 @@ def generate_bounds_and_contstraints():
         initial_state_constraints[q2] = 0.0
         initial_state_constraints[q3] = 0.0
         # initial_state_constraints[q4] = 0.0
-        # initial_state_constraints[q5] = 0.4
+        initial_state_constraints[q5] = 0.4 # Super critique
         initial_state_constraints[q6] = 0.0
-        initial_state_constraints[q7] = 0.0
+        # initial_state_constraints[q7] = 0.0
         initial_state_constraints[q8] = 0.0
         initial_state_constraints[u1] = SPEED
         initial_state_constraints[u2] = 0.0
@@ -243,7 +277,7 @@ problem = Problem(
     parallel=True,
     # backend='numpy'
 )
-problem.add_option('max_iter' , 100000)
+problem.add_option('max_iter' , 3000)
 
 
 
@@ -259,25 +293,25 @@ problem.plot_constraint_violations(sol)
 problem.plot_trajectories(sol)
 
 visualization_flag = True
-x_opt, T_opt = sol.reshape(-1, NUM_NODES)[:-1,:], sol.reshape(-1, NUM_NODES)[-1:,:]
+x_opt, T_opt = sol.reshape(-1, NUM_NODES)[:-NUM_INPUTS_TOT,:], sol.reshape(-1, NUM_NODES)[-NUM_INPUTS_TOT:,:]
 t_simu = np.linspace(0, DURATION, NUM_NODES)
 
 if visualization_flag:
     
     for model_index in range(NUM_MODELS):
         
-        x_opt_model = x_opt[model_index*16:16*(model_index+1)]
-        T_opt_model = T_opt[model_index*16:16*(model_index+1)]
+        x_opt_model = x_opt[model_index*16:16*(model_index+1), :]
+        T_opt_model = T_opt[model_index, :]
         disturbance_model =  known_trajectories[list(known_trajectories.keys())[model_index]]
         x_model = x[model_index*16:16*(model_index+1)]
-        r_model = r[model_index*NUM_INPUTS:NUM_INPUTS*(model_index+1)][0]
+        r_model = r[model_index*NUM_INPUTS]
     
     
         animate_solution(t_simu, 
                          x_opt_model, 
                          T_opt_model, 
                          disturbance_model, 
-                         bicycles[model_index], 
+                         bicycle_list[model_index], 
                          x_model, 
                          r_model)
 
