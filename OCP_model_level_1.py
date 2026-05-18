@@ -659,6 +659,10 @@ socp_3.generate_bounds_and_contstraints(SPEED, SAMPLING_FREQUENCY = 25)
 socp_3.formulate_Opty_problem(MAX_INTER = 5000)
 socp_3.solve_Opty_problem(initial_guess, visualization_flag = True, N_start = 1)
 
+# ((q + qdot) * NUM_MODELS + tau_vol + k) * DURATION * SAMPLING_FREQUENCY
+nb_variables = ((8 + 8) * NUM_MODELS + 3 + (2*4)) * DURATION * SAMPLING_FREQUENCY
+print(f"Expected number of variables: {nb_variables}")
+
 
 
 
