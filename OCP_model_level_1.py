@@ -180,7 +180,7 @@ class SOCP_problem:
         self.initial_state_constraints[pedaling_torque] = 0
         
         for gain in self.k:
-            self.bounds[gain] = (-300, 300)
+            self.bounds[gain] = (-50, 50)
 
         
         for model_index in range(self.NUM_MODELS):
@@ -612,7 +612,7 @@ model_type = 'model_level_1'
 WEIGHT = 0.5
 SPEED = 2.5  # m/s
 DURATION = 3 # s
-SAMPLING_FREQUENCY = 25
+SAMPLING_FREQUENCY = 25  # Hz
 
 socp_1 = SOCP_problem(NUM_MODELS, model_type)
 

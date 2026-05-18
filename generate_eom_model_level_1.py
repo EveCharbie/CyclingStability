@@ -70,7 +70,6 @@ def generate_model(model_name):
     
     
     #Noise
-    
     w_s_q4 = me.dynamicsymbols(f"{model_name}_w_s_q4")
     w_s_u4 = me.dynamicsymbols(f"{model_name}_w_s_u4")
     w_s_q7 = me.dynamicsymbols(f"{model_name}_w_s_q7")
@@ -195,46 +194,46 @@ def generate_model(model_name):
     nh_cons = system.nonholonomic_constraints
     h_cons = system.holonomic_constraints
     kdes = system.kdes
-    
+
     #Feedback loops
-    
+
     ## Option 1: feedback gain is constant over time
     K_s_q4 = sm.symbols("K_s_q4")
     K_s_q7 = sm.symbols("K_s_q7")
     K_s_u4 = sm.symbols("K_s_u4")
     K_s_u7 = sm.symbols("K_s_u7")
-    
-    
+
+
     K_r_q4 = sm.symbols("K_r_q4")
     K_r_q7 = sm.symbols("K_r_q7")
     K_r_u4 = sm.symbols("K_r_u4")
     K_r_u7 = sm.symbols("K_r_u7")
-    
+
     M_gains_steer = sm.Matrix([K_s_q4, K_s_q7, K_s_u4, K_s_u7]).T
     M_gains_roll = sm.Matrix([K_r_q4, K_r_q7, K_r_u4, K_r_u7]).T
-    
-    
+
+
     q_obs = sm.Matrix([q4, q7, u4, u7])
     q_ref = sm.Matrix([0, 0, 0, 0])
-    
-    eq_feedback_1 = sm.Matrix([steer_torque - steer_torque_vol + w_m_steer]) - M_gains_steer*(q_obs - q_ref + W_s)
-    eq_feedback_2 = sm.Matrix([roll_torque - roll_torque_vol + w_m_roll]) - M_gains_roll*(q_obs - q_ref + W_s)
-    
-    
+
+    eq_feedback_1 = sm.Matrix([steer_torque - steer_torque_vol + w_m_steer]) + M_gains_steer @ (q_obs - q_ref + W_s)
+    eq_feedback_2 = sm.Matrix([roll_torque - roll_torque_vol + w_m_roll]) + M_gains_roll @ (q_obs - q_ref + W_s)
+
+
     k = sm.Matrix([K_s_q4, K_s_q7, K_s_u4, K_s_u7, K_r_q4, K_r_q7, K_r_u4, K_r_u7])
-    
+
     r_dep = sm.Matrix([steer_torque, roll_torque])
-    
+
     r_ind = sm.Matrix([pedaling_torque, steer_torque_vol, roll_torque_vol])
-    
-    
-    
-    
-    
+
+
+
+
+
     eoms = eoms.col_join(sm.Matrix(kdes)).col_join(sm.Matrix(h_cons)).col_join(sm.Matrix(nh_cons))
-    
+
     #Add feedback equations
-    
+
     eoms = eoms.col_join(sm.Matrix([eq_feedback_1])).col_join(sm.Matrix([eq_feedback_2]))
     
     disturbance = sm.Matrix([disturbance])
